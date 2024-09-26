@@ -883,6 +883,14 @@ function commandsModule({
       commandFn: actions.rotateViewport,
       options: { rotation: 90 },
     },
+    rotateViewportPlus: {
+      commandFn: actions.rotateViewport,
+      options: { rotation: 1 },
+    },
+    rotateViewportMinus: {
+      commandFn: actions.rotateViewport,
+      options: { rotation: -1 },
+    },
     rotateViewportCCW: {
       commandFn: actions.rotateViewport,
       options: { rotation: -90 },

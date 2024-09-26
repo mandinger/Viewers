@@ -30,6 +30,20 @@ const bindings = [
     isEditable: true,
   },
   {
+    commandName: 'setToolActive',
+    commandOptions: { toolName: 'Pan' },
+    label: 'Pan',
+    keys: ['p'],
+    isEditable: true,
+  },
+  {
+    commandName: 'setToolActive',
+    commandOptions: { toolName: 'WindowLevel' },
+    label: 'Select Window Level',
+    keys: ['w'],
+    isEditable: true,
+  },
+  {
     commandName: 'rotateViewportCW',
     label: 'Rotate Right',
     keys: ['r'],
@@ -39,6 +53,18 @@ const bindings = [
     commandName: 'rotateViewportCCW',
     label: 'Rotate Left',
     keys: ['l'],
+    isEditable: true,
+  },
+  {
+    commandName: 'rotateViewportPlus',
+    label: 'Rotate Right 1 degree',
+    keys: ['shift+r'],
+    isEditable: true,
+  },
+  {
+    commandName: 'rotateViewportMinus',
+    label: 'Rotate Left 1 degree',
+    keys: ['shift+l'],
     isEditable: true,
   },
   {

@@ -1,11 +1,14 @@
-/** @type {AppTypes.Config} */
-
 window.config = {
   routerBasename: '/',
   // whiteLabeling: {},
   extensions: [],
   modes: [],
-  customizationService: {},
+  customizationService: {
+    dicomUploadComponent:
+      '@ohif/extension-cornerstone.customizationModule.cornerstoneDicomUploadComponent',
+    // Shows a custom route -access via http://localhost:3000/custom
+    // helloPage: '@ohif/extension-default.customizationModule.helloPage',
+  },
   showStudyList: true,
   // some windows systems have issues with more than 3 web workers
   maxNumberOfWebWorkers: 3,
@@ -13,9 +16,7 @@ window.config = {
   showWarningMessageForCrossOrigin: true,
   showCPUFallbackMessage: true,
   showLoadingIndicator: true,
-  experimentalStudyBrowserSort: false,
   strictZSpacingForVolumeViewport: true,
-  groupEnabledModesFirst: true,
   maxNumRequests: {
     interaction: 100,
     thumbnail: 75,
@@ -40,46 +41,20 @@ window.config = {
       namespace: '@ohif/extension-default.dataSourcesModule.dicomweb',
       sourceName: 'dicomweb',
       configuration: {
-        friendlyName: 'AWS S3 Static wado server',
-        name: 'aws',
-        wadoUriRoot: 'https://d33do7qe4w26qo.cloudfront.net/dicomweb',
-        qidoRoot: 'https://d33do7qe4w26qo.cloudfront.net/dicomweb',
-        wadoRoot: 'https://d33do7qe4w26qo.cloudfront.net/dicomweb',
-        qidoSupportsIncludeField: false,
-        imageRendering: 'wadors',
-        thumbnailRendering: 'wadors',
-        enableStudyLazyLoad: true,
-        supportsFuzzyMatching: false,
-        supportsWildcard: true,
-        staticWado: true,
-        singlepart: 'bulkdata,video',
-        // whether the data source should use retrieveBulkData to grab metadata,
-        // and in case of relative path, what would it be relative to, options
-        // are in the series level or study level (some servers like series some study)
-        bulkDataURI: {
-          enabled: true,
-          relativeResolution: 'studies',
-        },
-        omitQuotationForMultipartRequest: true,
-      },
-    },
-
-    {
-      namespace: '@ohif/extension-default.dataSourcesModule.dicomweb',
-      sourceName: 'ohif2',
-      configuration: {
-        friendlyName: 'AWS S3 Static wado secondary server',
-        name: 'aws',
-        wadoUriRoot: 'https://d28o5kq0jsoob5.cloudfront.net/dicomweb',
-        qidoRoot: 'https://d28o5kq0jsoob5.cloudfront.net/dicomweb',
-        wadoRoot: 'https://d28o5kq0jsoob5.cloudfront.net/dicomweb',
-        qidoSupportsIncludeField: false,
+        friendlyName: 'eImaging Azure Dicom Web',
+        name: 'AzureDicomWeb',
+        wadoUriRoot: 'https://eimaging-eimaging-dicom-service.dicom.azurehealthcareapis.com/v1',
+        qidoRoot: 'https://eimaging-eimaging-dicom-service.dicom.azurehealthcareapis.com/v1',
+        wadoRoot: 'https://eimaging-eimaging-dicom-service.dicom.azurehealthcareapis.com/v1',
+        qidoSupportsIncludeField: true,
+        dicomUploadEnabled: true,
         supportsReject: false,
         imageRendering: 'wadors',
         thumbnailRendering: 'wadors',
         enableStudyLazyLoad: true,
-        supportsFuzzyMatching: false,
-        supportsWildcard: true,
+        supportsFuzzyMatching: true,
+        supportsWildcard: false,
+        requestTransferSyntaxUID: '*',
         staticWado: true,
         singlepart: 'bulkdata,video',
         // whether the data source should use retrieveBulkData to grab metadata,
@@ -89,85 +64,29 @@ window.config = {
           enabled: true,
           relativeResolution: 'studies',
         },
-        omitQuotationForMultipartRequest: true,
       },
     },
     {
-      namespace: '@ohif/extension-default.dataSourcesModule.dicomweb',
-      sourceName: 'ohif3',
-      configuration: {
-        friendlyName: 'AWS S3 Static wado secondary server',
-        name: 'aws',
-        wadoUriRoot: 'https://d3t6nz73ql33tx.cloudfront.net/dicomweb',
-        qidoRoot: 'https://d3t6nz73ql33tx.cloudfront.net/dicomweb',
-        wadoRoot: 'https://d3t6nz73ql33tx.cloudfront.net/dicomweb',
-        qidoSupportsIncludeField: false,
-        supportsReject: false,
-        imageRendering: 'wadors',
-        thumbnailRendering: 'wadors',
-        enableStudyLazyLoad: true,
-        supportsFuzzyMatching: false,
-        supportsWildcard: true,
-        staticWado: true,
-        singlepart: 'bulkdata,video',
-        // whether the data source should use retrieveBulkData to grab metadata,
-        // and in case of relative path, what would it be relative to, options
-        // are in the series level or study level (some servers like series some study)
-        bulkDataURI: {
-          enabled: true,
-          relativeResolution: 'studies',
-        },
-        omitQuotationForMultipartRequest: true,
-      },
-    },
-
-    {
-      namespace: '@ohif/extension-default.dataSourcesModule.dicomweb',
-      sourceName: 'local5000',
-      configuration: {
-        friendlyName: 'Static WADO Local Data',
-        name: 'DCM4CHEE',
-        qidoRoot: 'http://localhost:5000/dicomweb',
-        wadoRoot: 'http://localhost:5000/dicomweb',
-        qidoSupportsIncludeField: false,
-        supportsReject: true,
-        supportsStow: true,
-        imageRendering: 'wadors',
-        thumbnailRendering: 'wadors',
-        enableStudyLazyLoad: true,
-        supportsFuzzyMatching: false,
-        supportsWildcard: true,
-        staticWado: true,
-        singlepart: 'video',
-        bulkDataURI: {
-          enabled: true,
-          relativeResolution: 'studies',
-        },
-      },
-    },
-
-    {
+      friendlyName: 'dicomweb delegating proxy',
       namespace: '@ohif/extension-default.dataSourcesModule.dicomwebproxy',
       sourceName: 'dicomwebproxy',
       configuration: {
-        friendlyName: 'dicomweb delegating proxy',
         name: 'dicomwebproxy',
       },
     },
     {
+      friendlyName: 'dicom json',
       namespace: '@ohif/extension-default.dataSourcesModule.dicomjson',
       sourceName: 'dicomjson',
       configuration: {
-        friendlyName: 'dicom json',
         name: 'json',
       },
     },
     {
+      friendlyName: 'dicom local',
       namespace: '@ohif/extension-default.dataSourcesModule.dicomlocal',
       sourceName: 'dicomlocal',
-      configuration: {
-        friendlyName: 'dicom local',
-      },
+      configuration: {},
     },
   ],
   httpErrorHandler: error => {
@@ -208,7 +127,9 @@ window.config = {
       keys: ['left'],
     },
     { commandName: 'rotateViewportCW', label: 'Rotate Right', keys: ['r'] },
+    { commandName: 'rotateViewportPlus', label: 'Rotate Right 1 degree', keys: ['shift+r'] },
     { commandName: 'rotateViewportCCW', label: 'Rotate Left', keys: ['l'] },
+    { commandName: 'rotateViewportMinus', label: 'Rotate Left 1 degree', keys: ['shift+l'] },
     { commandName: 'invertViewport', label: 'Invert', keys: ['i'] },
     {
       commandName: 'flipViewportHorizontal',
@@ -241,6 +162,12 @@ window.config = {
       commandOptions: { toolName: 'Zoom' },
       label: 'Zoom',
       keys: ['z'],
+    },
+    {
+      commandName: 'setToolActive',
+      commandOptions: { toolName: 'Pan' },
+      label: 'Pan',
+      keys: ['p'],
     },
     // ~ Window level presets
     {
@@ -289,4 +216,28 @@ window.config = {
       keys: ['9'],
     },
   ],
+  oidc: [
+    {
+      // ~ REQUIRED
+      // Authorization Server URL
+      authority: 'https://login.microsoftonline.com/a6bacc34-a144-4614-bc41-3ebccc18dbd1/v2.0/',
+      client_id: '4c2bfe80-090f-4374-bec1-554fb97b7592',
+      redirect_uri: '/callback', // `OHIFStandaloneViewer.js`
+      response_type: 'token', // "implicit"
+      scope: 'openid https://dicom.healthcareapis.azure.com/Dicom.ReadWrite', // https://dicom.healthcareapis.azure.com/Dicom.ReadWrite // email profile openid  https://dicom.healthcareapis.azure.com
+      // ~ OPTIONAL
+      post_logout_redirect_uri: '/logout-redirect.html',
+      automaticSilentRenew: true,
+      revokeAccessTokenOnSignout: true,
+    },
+  ],
+  cornerstoneExtensionConfig: {},
+  // Following property limits number of simultaneous series metadata requests.
+  // For http/1.x-only servers, set this to 5 or less to improve
+  //  on first meaningful display in viewer
+  // If the server is particularly slow to respond to series metadata
+  //  requests as it extracts the metadata from raw files everytime,
+  //  try setting this to even lower value
+  // Leave it undefined for no limit, suitable for HTTP/2 enabled servers
+  // maxConcurrentMetadataRequests: 5,
 };
