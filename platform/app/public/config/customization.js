@@ -3,7 +3,7 @@ window.config = {
   routerBasename: '/',
   extensions: [],
   modes: ['@ohif/mode-test'],
-  showStudyList: true,
+  showStudyList: false,
   // below flag is for performance reasons, but it might not work for all servers
   maxNumberOfWebWorkers: 3,
   showWarningMessageForCrossOrigin: false,
@@ -48,19 +48,15 @@ window.config = {
         items: {
           // Note the -10000 means -10000 + length of existing list, which is
           // much before the start of hte list, so put the new value at the start.
-          '-10000':
-          {
+          '-10000': {
             id: 'Species',
             customizationType: 'ohif.overlayItem',
             label: 'Species:',
             color: 'red',
             background: 'green',
-            condition: ({ instance }) =>
-              instance?.PatientSpeciesDescription,
+            condition: ({ instance }) => instance?.PatientSpeciesDescription,
             contentF: ({ instance }) =>
-              instance.PatientSpeciesDescription +
-              '/' +
-              instance.PatientBreedDescription,
+              instance.PatientSpeciesDescription + '/' + instance.PatientBreedDescription,
           },
         },
       },

@@ -1,7 +1,7 @@
 /** @type {AppTypes.Config} */
 window.config = {
   routerBasename: '/ohif-viewer/',
-  showStudyList: true,
+  showStudyList: false,
   customizationService: {
     dicomUploadComponent:
       '@ohif/extension-cornerstone.customizationModule.cornerstoneDicomUploadComponent',

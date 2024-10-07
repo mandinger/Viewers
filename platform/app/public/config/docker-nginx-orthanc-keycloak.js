@@ -4,7 +4,7 @@ window.config = {
   extensions: [],
   modes: [],
   customizationService: {},
-  showStudyList: true,
+  showStudyList: false,
   maxNumberOfWebWorkers: 3,
   showWarningMessageForCrossOrigin: true,
   showCPUFallbackMessage: true,

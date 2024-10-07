@@ -31,7 +31,7 @@ window.config = {
   ],
   extensions: [],
   modes: [],
-  showStudyList: true,
+  showStudyList: false,
   // filterQueryParam: false,
   defaultDataSourceName: 'dicomweb',
   dataSources: [

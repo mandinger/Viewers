@@ -14,7 +14,7 @@ window.config = {
   ],
   extensions: [],
   modes: ['@ohif/mode-test', '@ohif/mode-basic-dev-mode'],
-  showStudyList: true,
+  showStudyList: false,
   maxNumberOfWebWorkers: 4,
   // below flag is for performance reasons, but it might not work for all servers
   showWarningMessageForCrossOrigin: true,
