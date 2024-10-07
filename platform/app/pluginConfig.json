@@ -63,18 +63,6 @@
       "packageName": "@ohif/mode-longitudinal"
     },
     {
-      "packageName": "@ohif/mode-segmentation"
-    },
-    {
-      "packageName": "@ohif/mode-tmtv"
-    },
-    {
-      "packageName": "@ohif/mode-microscopy"
-    },
-    {
-      "packageName": "@ohif/mode-preclinical-4d"
-    },
-    {
       "packageName": "@ohif/mode-test",
       "default": false,
       "version": "3.0.0"
