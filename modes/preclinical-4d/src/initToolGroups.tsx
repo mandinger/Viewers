@@ -26,6 +26,10 @@ function _initToolGroups(toolNames, Enums, toolGroupService, commandsManager, se
         bindings: [{ mouseButton: Enums.MouseBindings.Primary }],
       },
       {
+        toolName: toolNames.SimpleRotate,
+        bindings: [{ mouseButton: Enums.MouseBindings.Primary }],
+      },
+      {
         toolName: toolNames.Pan,
         bindings: [{ mouseButton: Enums.MouseBindings.Auxiliary }],
       },

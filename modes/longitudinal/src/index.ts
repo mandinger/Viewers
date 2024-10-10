@@ -90,7 +90,6 @@ function modeFactory({ modeConfiguration }) {
       //   },
       // ]);
 
-
       // Init Default and SR ToolGroups
       initToolGroups(extensionManager, toolGroupService, commandsManager, this.labelConfig);
 
@@ -99,6 +98,7 @@ function modeFactory({ modeConfiguration }) {
         'MeasurementTools',
         'Zoom',
         'Pan',
+        'SimpleRotate',
         'TrackballRotate',
         'WindowLevel',
         'Capture',

@@ -65,6 +65,10 @@ function modeFactory({ modeConfiguration }) {
             bindings: [{ mouseButton: Enums.MouseBindings.Primary }],
           },
           {
+            toolName: toolNames.SimpleRotate,
+            bindings: [{ mouseButton: Enums.MouseBindings.Primary }],
+          },
+          {
             toolName: toolNames.Pan,
             bindings: [{ mouseButton: Enums.MouseBindings.Auxiliary }],
           },
@@ -97,6 +101,7 @@ function modeFactory({ modeConfiguration }) {
         'Zoom',
         'WindowLevel',
         'Pan',
+        'SimpleRotate',
         'Layout',
         'MoreTools',
       ]);

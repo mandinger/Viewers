@@ -49,6 +49,16 @@ const toolbarButtons: Button[] = [
     },
   },
   {
+    id: 'SimpleRotate',
+    uiType: 'ohif.radioGroup',
+    props: {
+      icon: 'tool-rotate-right',
+      label: 'Free rotate',
+      commands: setToolActiveToolbar,
+      evaluate: 'evaluate.cornerstoneTool',
+    },
+  },
+  {
     id: 'TrackballRotate',
     uiType: 'ohif.radioGroup',
     props: {

@@ -30,6 +30,10 @@ function initDefaultToolGroup(
         bindings: [{ mouseButton: Enums.MouseBindings.Primary }],
       },
       {
+        toolName: toolNames.SimpleRotate,
+        bindings: [{ mouseButton: Enums.MouseBindings.Primary }],
+      },
+      {
         toolName: toolNames.Pan,
         bindings: [{ mouseButton: Enums.MouseBindings.Auxiliary }],
       },
@@ -126,6 +130,14 @@ function initSRToolGroup(extensionManager, toolGroupService) {
         ],
       },
       {
+        toolName: toolNames.SimpleRotate,
+        bindings: [
+          {
+            mouseButton: Enums.MouseBindings.Primary,
+          },
+        ],
+      },
+      {
         toolName: toolNames.Pan,
         bindings: [
           {
@@ -189,6 +201,10 @@ function initMPRToolGroup(extensionManager, toolGroupService, commandsManager, m
     active: [
       {
         toolName: toolNames.WindowLevel,
+        bindings: [{ mouseButton: Enums.MouseBindings.Primary }],
+      },
+      {
+        toolName: toolNames.SimpleRotate,
         bindings: [{ mouseButton: Enums.MouseBindings.Primary }],
       },
       {
@@ -297,6 +313,10 @@ function initVolume3DToolGroup(extensionManager, toolGroupService) {
     active: [
       {
         toolName: toolNames.TrackballRotateTool,
+        bindings: [{ mouseButton: Enums.MouseBindings.Primary }],
+      },
+      {
+        toolName: toolNames.SimpleRotate,
         bindings: [{ mouseButton: Enums.MouseBindings.Primary }],
       },
       {

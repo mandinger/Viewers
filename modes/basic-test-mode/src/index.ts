@@ -85,6 +85,7 @@ function modeFactory() {
         'Zoom',
         'WindowLevel',
         'Pan',
+        'SimpleRotate',
         'Capture',
         'Layout',
         'MPR',

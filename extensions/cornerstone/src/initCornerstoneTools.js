@@ -42,6 +42,7 @@ import {
 
 import CalibrationLineTool from './tools/CalibrationLineTool';
 import ImageOverlayViewerTool from './tools/ImageOverlayViewerTool';
+import SimpleRotate from './tools/SimpleRotate';
 
 export default function initCornerstoneTools(configuration = {}) {
   CrosshairsTool.isAnnotation = false;
@@ -50,6 +51,7 @@ export default function initCornerstoneTools(configuration = {}) {
 
   init(configuration);
   addTool(PanTool);
+  addTool(SimpleRotate);
   addTool(WindowLevelTool);
   addTool(StackScrollMouseWheelTool);
   addTool(StackScrollTool);
@@ -105,6 +107,7 @@ export default function initCornerstoneTools(configuration = {}) {
 
 const toolNames = {
   Pan: PanTool.toolName,
+  SimpleRotate: SimpleRotate.toolName,
   ArrowAnnotate: ArrowAnnotateTool.toolName,
   WindowLevel: WindowLevelTool.toolName,
   StackScroll: StackScrollTool.toolName,
