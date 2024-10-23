@@ -38,26 +38,26 @@ class SimpleRotate extends BaseTool {
     const { viewport } = enabledElement;
     const originalCamera = viewport.getCamera();
 
+    //factor de sensibilidad para ajustar la velocidad de rotacion.
+    const sensitivity = 0.5;
+
     try {
       const deltaPointsWorld = deltaPoints.world;
 
-      let rotation = 0;
-      if (deltaPointsWorld[1] > 0) {
-        //console.log('El mouse se movió hacia abajo.');
-        rotation = 1;
-      } else if (deltaPointsWorld[1] < 0) {
-        //console.log('El mouse se movió hacia arriba.');
-        rotation = -1;
-      } else {
-        //console.log('El mouse no se movió verticalmente.');
-      }
-      const camera = viewport.getCamera();
+      //angulo de rotacion está basado en el movimiento del mouse, escalado por la sensibilidad.
+      const rotation = deltaPointsWorld[1] * sensitivity;
       const rotAngle = (rotation * Math.PI) / 180;
-      const rotMat = mat4.identity(new Float32Array(16));
-      mat4.rotate(rotMat, rotMat, rotAngle, camera.viewPlaneNormal);
-      const rotatedViewUp = vec3.transformMat4(vec3.create(), camera.viewUp, rotMat);
-      viewport.setCamera({ viewUp: rotatedViewUp as CoreTypes.Point3 });
-      viewport.render();
+
+      if (rotAngle !== 0) {
+        const camera = viewport.getCamera();
+        const rotMat = mat4.identity(new Float32Array(16));
+
+        mat4.rotate(rotMat, rotMat, rotAngle, camera.viewPlaneNormal);
+        const rotatedViewUp = vec3.transformMat4(vec3.create(), camera.viewUp, rotMat);
+
+        viewport.setCamera({ viewUp: rotatedViewUp as CoreTypes.Point3 });
+        viewport.render();
+      }
     } catch (error) {
       console.error('Ocurrió un error durante la rotación:', error);
       viewport.setCamera(originalCamera);
