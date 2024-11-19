@@ -25,6 +25,7 @@ import {
 } from '@ohif/core';
 
 import loadModules, { loadModule as peerImport } from './pluginImports';
+import { kumoapi } from '@ohif/core';
 
 /**
  * @param {object|func} appConfigOrFunc - application configuration, or a function that returns application configuration
@@ -37,8 +38,8 @@ async function appInit(appConfigOrFunc, defaultExtensions, defaultModes) {
 
   let fetchedData;
   try {
-    const _apiUrl = process.env.API_URL;
-    const _loginEndPoint = process.env.LOGIN_ENDPOINT;
+    const _apiUrl = kumoapi.url;
+    const _loginEndPoint = kumoapi.login_endpoint;
     const _urlLogin = _apiUrl + _loginEndPoint;
 
     const response = await fetch(_urlLogin, {
