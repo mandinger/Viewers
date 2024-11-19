@@ -35,6 +35,31 @@ async function appInit(appConfigOrFunc, defaultExtensions, defaultModes) {
     getAppState: () => {},
   };
 
+  let fetchedData;
+  try {
+    const _apiUrl = process.env.API_URL;
+    const _loginEndPoint = process.env.LOGIN_ENDPOINT;
+    const _urlLogin = _apiUrl + _loginEndPoint;
+
+    const response = await fetch(_urlLogin, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ key: 'value' }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    fetchedData = await response.json();
+
+    document.cookie = `fetchedData=${JSON.stringify(fetchedData)}; path=/; max-age=3600; secure; samesite=strict`;
+  } catch (error) {
+    console.error('Error fetching data from localhost:5500:', error);
+    fetchedData = {};
+  }
+
   const commandsManager = new CommandsManager(commandsManagerConfig);
   const servicesManager = new ServicesManager(commandsManager);
   const serviceProvidersManager = new ServiceProvidersManager();

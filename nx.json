@@ -15,10 +15,14 @@
           "test:e2e:serve",
           "build:viewer",
           "build:dev",
+          "build:api",
           "build:aws",
           "build:viewer:ci",
           "build:viewer:qa",
           "build:viewer:demo",
+          "build:api:ci",
+          "build:api:qa",
+          "build:api:demo",
           "build"
         ]
       }
@@ -67,7 +71,8 @@
     },
     "build": {
       "outputs": [
-        "{projectRoot}/platform/app/dist"
+        "{projectRoot}/platform/app/dist",
+        "{projectRoot}/platform/api/dist"
       ]
     }
   },
