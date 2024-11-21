@@ -216,12 +216,10 @@ window.config = {
       keys: ['9'],
     },
   ],
-  kumoapi: [
-    {
-      url: 'https://kumo-api.ashycliff-3915e68d.eastus.azurecontainerapps.io/',
-      login_endpoint: 'microsoftservice/appLogin',
-    },
-  ],
+  kumoapi: {
+    url: 'https://kumo-api.ashycliff-3915e68d.eastus.azurecontainerapps.io/',
+    login_endpoint: 'microsoftservice/appLogin',
+  },
   oidc: [
     {
       // ~ REQUIRED

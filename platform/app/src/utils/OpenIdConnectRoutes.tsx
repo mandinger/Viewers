@@ -27,8 +27,6 @@ function OpenIdConnectRoutes({ routerBasename, userAuthenticationService }) {
 
     if (cookieValue) {
       response = JSON.parse(cookieValue); // Parsear el valor de la cookie
-      console.log('response: ' + response);
-      console.log('saresponsera: ' + response.access_token);
     } else {
       console.log('No cookie found');
     }

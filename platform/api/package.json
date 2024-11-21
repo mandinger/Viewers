@@ -12,7 +12,7 @@
     "start": "nodemon ./src/index.js",
     "start:dev": "nodemon ./src/index.js",
     "start:prod": "node ./dist/index.js",
-    "dev": "nodemon ./src/index.js"
+    "dev:viewer": "nodemon ./src/index.js"
   },
   "devDependencies": {
     "nodemon": "^3.1.7"

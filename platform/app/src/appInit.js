@@ -25,21 +25,31 @@ import {
 } from '@ohif/core';
 
 import loadModules, { loadModule as peerImport } from './pluginImports';
-import { kumoapi } from '@ohif/core';
 
 /**
  * @param {object|func} appConfigOrFunc - application configuration, or a function that returns application configuration
  * @param {object[]} defaultExtensions - array of extension objects
  */
+
 async function appInit(appConfigOrFunc, defaultExtensions, defaultModes) {
   const commandsManagerConfig = {
     getAppState: () => {},
   };
+  const commandsManager = new CommandsManager(commandsManagerConfig);
+  const servicesManager = new ServicesManager(commandsManager);
+  const serviceProvidersManager = new ServiceProvidersManager();
+  const hotkeysManager = new HotkeysManager(commandsManager, servicesManager);
+
+  const appConfig = {
+    ...(typeof appConfigOrFunc === 'function'
+      ? await appConfigOrFunc({ servicesManager, peerImport })
+      : appConfigOrFunc),
+  };
 
   let fetchedData;
   try {
-    const _apiUrl = kumoapi.url;
-    const _loginEndPoint = kumoapi.login_endpoint;
+    const _apiUrl = appConfig.kumoapi.url;
+    const _loginEndPoint = appConfig.kumoapi.login_endpoint;
     const _urlLogin = _apiUrl + _loginEndPoint;
 
     const response = await fetch(_urlLogin, {
@@ -61,16 +71,6 @@ async function appInit(appConfigOrFunc, defaultExtensions, defaultModes) {
     fetchedData = {};
   }
 
-  const commandsManager = new CommandsManager(commandsManagerConfig);
-  const servicesManager = new ServicesManager(commandsManager);
-  const serviceProvidersManager = new ServiceProvidersManager();
-  const hotkeysManager = new HotkeysManager(commandsManager, servicesManager);
-
-  const appConfig = {
-    ...(typeof appConfigOrFunc === 'function'
-      ? await appConfigOrFunc({ servicesManager, peerImport })
-      : appConfigOrFunc),
-  };
   // Default the peer import function
   appConfig.peerImport ||= peerImport;
 
