@@ -10,9 +10,21 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT;
 
+const allowedOrigins = ['http://localhost:3000', 'https://eimaging-ohif.azureedge.net'];
+
 app.use(
   cors({
-    origin: 'http://localhost:3000',
+    origin: (origin, callback) => {
+      if (!origin) {
+        return callback(null, true);
+      }
+
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      } else {
+        return callback(new Error('Not allowed by CORS'));
+      }
+    },
   })
 );
 
