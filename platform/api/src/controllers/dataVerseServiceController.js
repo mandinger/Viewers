@@ -1,4 +1,6 @@
 const bodyParser = require('body-parser');
+const tokenService = require('../services/tokenService');
+
 const fs = require('fs');
 const path = require('path');
 
@@ -13,14 +15,19 @@ const manageScreenShot = async (req, res) => {
   }
 
   try {
+    //todoNich: mover validaciones
     const matches = base64Image.match(/^data:image\/([a-zA-Z]+);base64,(.+)$/);
 
     if (!matches || matches.length !== 3) {
       return res.status(400).json({ message: 'Invalid base64 format.' });
     }
 
-    const extension = matches[1]; // Obtener la extensión (jpg, png, etc.)
+    const extension = matches[1];
     const fileName = `${teleconsultationID}.${extension}`;
+    const token = await tokenService.getToken();
+    /**
+     * Hacer algo con la imge
+     */
 
     res.status(201).json({ message: 'Image uploaded successfully!', fileName });
   } catch (error) {

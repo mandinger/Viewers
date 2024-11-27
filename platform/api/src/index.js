@@ -2,8 +2,8 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 
-const microsoftServiceRoutes = require('./routes/microsoftServiceRoutes');
-const dataVerseServiceRoutes = require('./routes/dataVerseServiceRoutes');
+const microsoftServiceRoutes = require('./routes/authRoutes');
+const dataVerseServiceRoutes = require('./routes/dataVerseRoutes');
 
 const cors = require('cors');
 

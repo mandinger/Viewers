@@ -1,6 +1,6 @@
 // src/routes/microsoftServiceRoutes.js
 const express = require('express');
-const { appLogin } = require('../controllers/microsoftServiceController');
+const { appLogin } = require('../controllers/authServiceController');
 
 const router = express.Router();
 

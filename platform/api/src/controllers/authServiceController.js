@@ -3,13 +3,13 @@ require('dotenv').config();
 
 // Función para obtener el token de Microsoft
 const appLogin = async (req, res) => {
-  const _clientId = process.env.CLIENT_ID;
-  const _clientSecret = process.env.CLIENT_SECRET;
-  const _tenantId = process.env.TENANT_ID;
-  const _grantType = process.env.GRANT_TYPE;
-  const _scope = process.env.SCOPE;
-  const _resource = process.env.RESOURCE;
-  let _urlLoguin = process.env.URL_LOGIN;
+  const _clientId = process.env.CLIENT_ID_MICROSOFT;
+  const _clientSecret = process.env.CLIENT_SECRET_MICROSOFT;
+  const _tenantId = process.env.TENANT_ID_MICROSOFT;
+  const _grantType = process.env.GRANT_TYPE_MICROSOFT;
+  const _scope = process.env.SCOPE_MICROSOFT;
+  const _resource = process.env.RESOURCE_MICROSOFT;
+  let _urlLoguin = process.env.URL_LOGIN_MICROSOFT;
 
   const params = {
     client_id: _clientId,
