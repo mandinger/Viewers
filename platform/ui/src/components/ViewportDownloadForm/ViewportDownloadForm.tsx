@@ -98,13 +98,67 @@ const ViewportDownloadForm = ({
     setKeepAspect(!keepAspect);
   };
 
-  const downloadImage = () => {
+  const downloadImage = async () => {
+    //Bajada de archivo original
     downloadBlob(
       filename || DEFAULT_FILENAME,
       fileType,
       viewportElement,
       downloadCanvas.ref.current
     );
+    //Canvas donde obtengo la imagen
+    const canvas = document.querySelector('.cornerstone-canvas');
+    const base64String = await convertToFullBase64String(canvas);
+    console.log('Base64 image:', base64String);
+
+    //todoNichu: tirar esto a un servicio y
+    const _apiUrl = 'http://localhost:5500/';
+    const _loginEndPoint = 'dataVerseService/manageScreenShot';
+    const _urlLogin = _apiUrl + _loginEndPoint;
+    //todoNichu: tambien
+    const urlParams = new URLSearchParams(window.location.search);
+    const teleconsultationId = urlParams.get('teleconsultationId');
+
+    fetch(_urlLogin, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        teleconsultationID: teleconsultationId,
+        base64Image: base64String,
+      }),
+    });
+  };
+
+  const convertToFullBase64String = async (canvas: Element) => {
+    if (!canvas) {
+      console.error('Canvas not found.');
+      return null;
+    }
+    let fileType;
+    return new Promise((resolve, reject) => {
+      canvas.toBlob(blob => {
+        if (!blob) {
+          reject('Could not generate the blob.');
+          return;
+        }
+
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          try {
+            fileType = blob.type.split('/')[1]; // Extract file type (e.g., 'png')
+            const base64DataUrl = reader.result; // Base64 with prefix
+            const base64String = `data:image/${fileType};base64,${base64DataUrl.split(',')[1]}`;
+            resolve(base64String); // Resolve the promise with the full Base64 string
+          } catch (error) {
+            reject(error);
+          }
+        };
+        reader.onerror = () => reject('Error converting blob to Base64.');
+        reader.readAsDataURL(blob);
+      }, 'image/' + fileType); // Adjust MIME type as needed
+    });
   };
 
   /**
@@ -327,7 +381,7 @@ const ViewportDownloadForm = ({
                 sortDirection="none"
                 label={t('File Type')}
                 isSortable={false}
-                onLabelClick={() => {}}
+                onLabelClick={() => { }}
               >
                 <Select
                   className="mt-2 text-white"

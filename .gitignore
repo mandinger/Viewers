@@ -56,3 +56,4 @@ tests/test-results/
 tests/playwright-report/
 /blob-report/
 /playwright/.cache/
+platform/api/src/controllers/uploads/*.png

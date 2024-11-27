@@ -33,7 +33,7 @@ import loadModules, { loadModule as peerImport } from './pluginImports';
 
 async function appInit(appConfigOrFunc, defaultExtensions, defaultModes) {
   const commandsManagerConfig = {
-    getAppState: () => {},
+    getAppState: () => { },
   };
   const commandsManager = new CommandsManager(commandsManagerConfig);
   const servicesManager = new ServicesManager(commandsManager);
@@ -48,6 +48,7 @@ async function appInit(appConfigOrFunc, defaultExtensions, defaultModes) {
 
   let fetchedData;
   try {
+    //todoNichu: tirar esto a un servicio
     const _apiUrl = appConfig.kumoapi.url;
     const _loginEndPoint = appConfig.kumoapi.login_endpoint;
     const _urlLogin = _apiUrl + _loginEndPoint;
