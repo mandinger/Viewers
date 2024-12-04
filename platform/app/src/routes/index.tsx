@@ -7,6 +7,7 @@ import DataSourceWrapper from './DataSourceWrapper';
 import WorkList from './WorkList';
 import Local from './Local';
 import Debug from './Debug';
+import UploadFile from './UploadFile';
 import NotFound from './NotFound';
 import buildModeRoutes from './buildModeRoutes';
 import PrivateRoute from './PrivateRoute';
@@ -109,11 +110,19 @@ const createRoutes = ({
   };
 
   const customRoutes = customizationService.getGlobalCustomization('customRoutes');
+
+  const captureRoute = {
+    path: '/fileUpload',
+    children: DataSourceWrapper,
+    props: { children: UploadFile },
+  };
+
   const allRoutes = [
     ...routes,
     ...(showStudyList ? [WorkListRoute] : []),
     ...(customRoutes?.routes || []),
     ...bakedInRoutes,
+    ...[captureRoute],
     customRoutes?.notFoundRoute || notFoundRoute,
   ];
 

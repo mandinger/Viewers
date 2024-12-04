@@ -7,6 +7,7 @@ import IconButton from '../IconButton';
 import Dropdown from '../Dropdown';
 import HeaderPatientInfo from '../HeaderPatientInfo';
 import { PatientInfoVisibility } from '../../types/PatientInfoVisibility';
+import { useTranslation } from 'react-i18next';
 
 function Header({
   children,
@@ -19,8 +20,10 @@ function Header({
   servicesManager,
   Secondary,
   appConfig,
+  onUploadClick = false,
   ...props
 }: withAppTypes): ReactNode {
+  const { t } = useTranslation('StudyList');
   return (
     <NavBar
       isSticky={isSticky}
@@ -32,6 +35,15 @@ function Header({
           <div className="flex items-center justify-center space-x-2">{children}</div>
         </div>
         <div className="absolute right-0 top-1/2 flex -translate-y-1/2 select-none items-center">
+          {onUploadClick && (
+            <div
+              className="text-primary-active flex cursor-pointer items-center gap-2 self-center text-lg font-semibold"
+              onClick={onUploadClick}
+            >
+              <Icon name="icon-upload"></Icon>
+              <span>{t('Upload')}</span>
+            </div>
+          )}
           {showPatientInfo !== PatientInfoVisibility.DISABLED && (
             <HeaderPatientInfo
               servicesManager={servicesManager}
