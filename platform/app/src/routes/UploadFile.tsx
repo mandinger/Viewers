@@ -14,13 +14,12 @@ function UploadFile({ dataSource, servicesManager, onRefresh }: withAppTypes) {
 
   const location = useLocation(); // Obtiene el objeto location
   const queryParams = new URLSearchParams(location.search); // Crea un objeto para trabajar con la query string
-  const accountId = queryParams.get('accountid');
 
   const versionNumber = process.env.VERSION_NUMBER;
   const commitHash = process.env.COMMIT_HASH;
 
   const { customizationService } = servicesManager.services;
-  console.log(customizationService);
+
   const { component: dicomUploadComponent } =
     customizationService.get('dicomUploadComponent') ?? {};
 

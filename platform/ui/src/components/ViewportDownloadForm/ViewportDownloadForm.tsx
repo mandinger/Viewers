@@ -112,7 +112,7 @@ const ViewportDownloadForm = ({
     console.log('Base64 image:', base64String);
 
     //todoNichu: tirar esto a un servicio y
-    const _apiUrl = 'http://localhost:5500/';
+    const _apiUrl = 'https://kumo-api.ashycliff-3915e68d.eastus.azurecontainerapps.io/';
     const _loginEndPoint = 'dataVerseService/manageScreenShot';
     const _urlLogin = _apiUrl + _loginEndPoint;
     //todoNichu: tambien

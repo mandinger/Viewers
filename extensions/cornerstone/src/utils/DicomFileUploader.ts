@@ -1,6 +1,7 @@
 import dicomImageLoader from '@cornerstonejs/dicom-image-loader';
 
 import { PubSubService } from '@ohif/core';
+import { parseDicom, explicitDataSetToJS } from 'dicom-parser';
 
 export const EVENTS = {
   PROGRESS: 'event:DicomFileUploader:progress',
@@ -116,6 +117,27 @@ export default class DicomFileUploader extends PubSubService {
             this._reject(reject, new UploadRejection(UploadStatus.Cancelled, 'Cancelled'));
             return;
           }
+
+          const dicomData = parseDicom(new Uint8Array(dicomFile));
+          const data = explicitDataSetToJS(dicomData);
+          //todoNichu: tirar esto a un servicio
+          const _apiUrl = 'https://kumo-api.ashycliff-3915e68d.eastus.azurecontainerapps.io/';
+          const _loginEndPoint = 'dataVerseService/manageUploads';
+          const _urlLogin = _apiUrl + _loginEndPoint;
+
+          const urlParams = new URLSearchParams(window.location.search);
+          const accountid = urlParams.get('accountid');
+
+          fetch(_urlLogin, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              metadataImg: data,
+              accountid: accountid,
+            }),
+          });
 
           if (!this._checkDicomFile(dicomFile)) {
             // The file is not DICOM

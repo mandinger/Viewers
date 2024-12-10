@@ -1,5 +1,6 @@
 const bodyParser = require('body-parser');
 const tokenService = require('../services/tokenService');
+const keyValueDictionary = require('../utils/keyValueDictionary');
 
 const fs = require('fs');
 const path = require('path');
@@ -36,6 +37,29 @@ const manageScreenShot = async (req, res) => {
   }
 };
 
+const manageUploads = async (req, res) => {
+  const { metadataImg, accountid } = req.body;
+
+  try {
+    const token = await tokenService.getToken();
+    /**
+     * Hacer algo con la metadata
+     */
+
+    let obj = JSON.parse(JSON.stringify(metadataImg));
+
+    console.log('accountid:' + accountid);
+    console.log(keyValueDictionary['x00100010'], obj.x00100010);
+    console.log(keyValueDictionary['x0020000d'], obj.x0020000d);
+
+    res.status(201).json({ message: 'Metadata recived!' });
+  } catch (error) {
+    console.error('Error saving metadata:', error);
+    res.status(500).json({ message: 'Failed to save metadata.', error: error.message });
+  }
+};
+
 module.exports = {
   manageScreenShot,
+  manageUploads,
 };
