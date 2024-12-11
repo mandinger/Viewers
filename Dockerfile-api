@@ -6,8 +6,6 @@ WORKDIR /api
 # Copia el archivo package.json
 COPY ./platform/api/package.json ./
 
-COPY ./platform/api/.env ./
-
 # Instala las dependencias de la aplicación
 RUN npm install
 
