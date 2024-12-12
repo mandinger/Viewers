@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Header } from '@ohif/ui';
 import { useAppConfig } from '@state';
 import { useLocation } from 'react-router-dom';
@@ -58,6 +58,12 @@ function UploadFile({ dataSource, servicesManager, onRefresh }: withAppTypes) {
         }),
     },
   ];
+
+  useEffect(() => {
+    if (uploadProps) {
+      show(uploadProps);
+    }
+  }, []);
 
   return (
     <div className="flex h-screen flex-col bg-black">

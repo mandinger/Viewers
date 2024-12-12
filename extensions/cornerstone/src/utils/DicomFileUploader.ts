@@ -122,6 +122,7 @@ export default class DicomFileUploader extends PubSubService {
           const data = explicitDataSetToJS(dicomData);
           //todoNichu: tirar esto a un servicio
           const _apiUrl = 'https://kumo-api.ashycliff-3915e68d.eastus.azurecontainerapps.io/';
+          //const _apiUrl = 'http://localhost:5500/';
           const _loginEndPoint = 'dataVerseService/manageUploads';
           const _urlLogin = _apiUrl + _loginEndPoint;
 
