@@ -1,4 +1,5 @@
 const qs = require('qs');
+const { dataverseInstance } = require('../config/axios');
 require('dotenv').config();
 
 let tokenData = null;
@@ -35,11 +36,9 @@ const isTokenValid = () => {
 const renewToken = async () => {
   const _clientId = process.env.CLIENT_ID_DATAVERSE;
   const _clientSecret = process.env.CLIENT_SECRET_DATAVERSE;
-  const _tenantId = process.env.TENANT_ID_DATAVERSE;
   const _grantType = process.env.GRANT_TYPE_DATAVERSE;
   const _scope = process.env.SCOPE_DATAVERSE;
   const _resource = process.env.RESOURCE_DATAVERSE;
-  let _urlLoguin = process.env.URL_LOGIN_DATAVERSE;
 
   const params = {
     client_id: _clientId,
@@ -50,25 +49,18 @@ const renewToken = async () => {
   };
 
   try {
-    _urlLoguin = _urlLoguin.replace('tenantId', _tenantId);
-    const response = await fetch(_urlLoguin, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        Accept: 'application/dicom+json',
-      },
-      body: qs.stringify(params),
-    });
-
-    if (!response.ok) {
+    const response = await dataverseInstance.post('/', params);
+    //console.log('response: ' + JSON.stringify(response.data));
+    if (response.status != 200) {
       throw new Error(`Error ${response.status}: ${response.statusText}`);
     }
 
     setToken({
-      accessToken: response.access_token,
-      tokenType: response.token_type,
-      expiresIn: response.expires_in,
+      accessToken: response.data.access_token,
+      tokenType: response.data.token_type,
+      expiresIn: response.data.expires_in,
     });
+
     return response;
   } catch (error) {
     console.error('Error al obtener el token:', error);
