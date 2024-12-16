@@ -15,7 +15,7 @@ type DicomUploadProps = {
 };
 
 function DicomUpload({ dataSource, onComplete, onStarted }: DicomUploadProps): ReactElement {
-  const baseClassNames = 'min-h-[480px] flex flex-col bg-black select-none';
+  const baseClassNames = 'min-h-[480px] w-full flex flex-col bg-black select-none';
   const [dicomFileUploaderArr, setDicomFileUploaderArr] = useState([]);
 
   const onDrop = useCallback(async acceptedFiles => {
@@ -45,7 +45,7 @@ function DicomUpload({ dataSource, onComplete, onStarted }: DicomUploadProps): R
                   <div {...getRootProps()}>
                     <Button
                       disabled={false}
-                      onClick={() => {}}
+                      onClick={() => { }}
                     >
                       {'Add files'}
                       <input {...getInputProps()} />
@@ -62,7 +62,7 @@ function DicomUpload({ dataSource, onComplete, onStarted }: DicomUploadProps): R
                     <Button
                       type={ButtonEnums.type.secondary}
                       disabled={false}
-                      onClick={() => {}}
+                      onClick={() => { }}
                     >
                       {'Add folder'}
                       <input

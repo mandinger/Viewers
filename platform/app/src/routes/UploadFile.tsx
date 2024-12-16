@@ -4,10 +4,9 @@ import { useAppConfig } from '@state';
 import { useLocation } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
-import { Types, useModal, AboutModal } from '@ohif/ui';
+import { Types } from '@ohif/ui';
 
 function UploadFile({ dataSource, servicesManager, onRefresh }: withAppTypes) {
-  const { show, hide } = useModal();
   const { t } = useTranslation();
   const [appConfig] = useAppConfig();
   const PatientInfoVisibility = Types.PatientInfoVisibility;
@@ -23,58 +22,28 @@ function UploadFile({ dataSource, servicesManager, onRefresh }: withAppTypes) {
   const { component: dicomUploadComponent } =
     customizationService.get('dicomUploadComponent') ?? {};
 
-  const uploadProps = dicomUploadComponent
-    ? {
-      title: 'Upload files',
-      closeButton: true,
-      shouldCloseOnEsc: false,
-      shouldCloseOnOverlayClick: false,
-      content: dicomUploadComponent.bind(null, {
-        dataSource,
-        onComplete: () => {
-          hide();
-          onRefresh();
-        },
-        onStarted: () => {
-          show({
-            ...uploadProps,
-            // when upload starts, hide the default close button as closing the dialogue must be handled by the upload dialogue itself
-            closeButton: false,
-          });
-        },
-      }),
-    }
-    : undefined;
-  const menuOptions = [
-    {
-      title: t('Header:About'),
-      icon: 'info',
-      onClick: () =>
-        show({
-          content: AboutModal,
-          title: t('AboutModal:About OHIF Viewer'),
-          contentProps: { versionNumber, commitHash },
-          containerDimensions: 'max-w-4xl max-h-4xl',
-        }),
-    },
-  ];
+  // Configuración de las props del componente de subida
+  const UploadComponent = dicomUploadComponent
+    ? dicomUploadComponent.bind(null, {
+      dataSource,
+      onComplete: () => {
+        onRefresh();
+      },
+      onStarted: () => { },
+    })
+    : null;
 
   useEffect(() => {
-    if (uploadProps) {
-      show(uploadProps);
+    if (!UploadComponent) {
+      console.warn('No se encontró el componente de subida de DICOM');
     }
   }, []);
 
   return (
     <div className="flex h-screen flex-col bg-black">
-      <Header
-        isSticky
-        menuOptions={menuOptions}
-        isReturnEnabled={false}
-        WhiteLabeling={appConfig.whiteLabeling}
-        showPatientInfo={PatientInfoVisibility.DISABLED}
-        onUploadClick={uploadProps ? () => show(uploadProps) : undefined}
-      />
+      <div className="flex flex-grow">
+        <UploadComponent />
+      </div>
     </div>
   );
 }
