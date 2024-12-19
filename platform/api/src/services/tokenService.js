@@ -17,9 +17,8 @@ const getToken = async () => {
   if (isTokenValid()) {
     return tokenData.accessToken;
   }
-
-  await renewToken();
-  return tokenData.access_token;
+  let token = await renewToken();
+  return token;
 };
 
 const isTokenValid = () => {
@@ -49,7 +48,7 @@ const renewToken = async () => {
   };
 
   try {
-    const response = await dataverseInstance.post('/', params);
+    let response = await dataverseInstance.post('/', params);
     //console.log('response: ' + JSON.stringify(response.data));
     if (response.status != 200) {
       throw new Error(`Error ${response.status}: ${response.statusText}`);
@@ -61,9 +60,9 @@ const renewToken = async () => {
       expiresIn: response.data.expires_in,
     });
 
-    return response;
+    return response.data.access_token;
   } catch (error) {
-    console.error('Error al obtener el token:', error);
+    console.error('Error to obtain token:', error);
   }
 };
 

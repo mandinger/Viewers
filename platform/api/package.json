@@ -14,7 +14,7 @@
     "start:dev": "nodemon ./src/index.js",
     "start:prod": "node ./dist/index.js",
     "dev:viewer": "nodemon ./src/index.js",
-    "build": "shx mkdir -p dist && cp -r src/* dist/",
+    "build": "shx mkdir -p dist && shx cp -r src/* dist/",
     "clean": "shx rm -rf dist",
     "clean:deep": "yarn run clean && shx rm -rf node_modules"
   },

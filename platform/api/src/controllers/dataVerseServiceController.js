@@ -26,6 +26,7 @@ const manageScreenShot = async (req, res) => {
     const extension = matches[1];
     const fileName = `${teleconsultationID}.${extension}`;
     const token = await tokenService.getToken();
+    console.log(token);
     /**
      * Hacer algo con la imge
      */
@@ -41,7 +42,8 @@ const manageUploads = async (req, res) => {
   const { metadataImg, accountid } = req.body;
 
   try {
-    const token = await tokenService.getToken();
+    let token = await tokenService.getToken();
+    console.log(token);
     /**
      * Hacer algo con la metadata
      */
@@ -52,7 +54,7 @@ const manageUploads = async (req, res) => {
     console.log(keyValueDictionary['x00100010'], obj.x00100010);
     console.log(keyValueDictionary['x0020000d'], obj.x0020000d);
 
-    res.status(201).json({ message: 'Metadata recived!' });
+    res.status(201).json({ message: 'Metadata received!' });
   } catch (error) {
     console.error('Error saving metadata:', error);
     res.status(500).json({ message: 'Failed to save metadata.', error: error.message });

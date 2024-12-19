@@ -28,8 +28,8 @@ const appLogin = async (req, res) => {
     // Retornar el token
     res.json(response.data);
   } catch (error) {
-    console.error('Error al obtener el token:', error);
-    res.status(500).json({ error: 'No se pudo obtener el token de acceso' });
+    console.error('Error obtaining token:', error);
+    res.status(500).json({ error: 'Unable to obtain access token.' });
   }
 };
 
