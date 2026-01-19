@@ -11,26 +11,32 @@ function OpenIdConnectRoutes({ routerBasename, userAuthenticationService }) {
     },
   };
 
-  //const userManager = {};
-  const getAuthorizationHeader = () => {
-    const user = userAuthenticationService.getUser();
-    let response;
-    //aca meter el bearer
+  const parseTokenFromCookie = (cookieName: string) => {
     const cookies = document.cookie.split('; ');
-    let cookieValue = '';
-    cookies.forEach(cookie => {
-      const [name, value] = cookie.split('=');
-      if (name === 'fetchedData') {
-        cookieValue = decodeURIComponent(value);
-      }
-    });
+    const cookie = cookies.find(cookieEntry => cookieEntry.startsWith(`${cookieName}=`));
 
-    if (cookieValue) {
-      response = JSON.parse(cookieValue); // Parsear el valor de la cookie
-    } else {
-      console.log('No cookie found');
+    if (!cookie) {
+      return null;
     }
-    //aca
+
+    try {
+      const [, value] = cookie.split('=');
+      return JSON.parse(decodeURIComponent(value));
+    } catch (err) {
+      console.warn(`Unable to parse cookie ${cookieName}:`, err);
+      return null;
+    }
+  };
+
+  const getAuthorizationHeader = (options: { scope?: string } = {}) => {
+    const targetCookie = options.scope === 'readWrite' ? 'fetchedDataReadWrite' : 'fetchedData';
+    const response = parseTokenFromCookie(targetCookie) ?? parseTokenFromCookie('fetchedData');
+
+    if (!response?.access_token) {
+      console.warn('No auth token available for authorization header');
+      return {};
+    }
+
     return {
       Authorization: `Bearer ${response.access_token}`,
     };

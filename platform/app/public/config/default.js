@@ -219,6 +219,7 @@ window.config = {
   kumoapi: {
     url: 'https://kumo-api.ashycliff-3915e68d.eastus.azurecontainerapps.io/',
     login_endpoint: 'microsoftservice/appLogin',
+    login_read_write_endpoint: 'microsoftservice/appLoginReadWrite',
   },
   oidc: [
     {
