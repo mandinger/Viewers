@@ -43,14 +43,14 @@ window.config = {
       configuration: {
         friendlyName: 'eImaging Azure Dicom Web',
         name: 'AzureDicomWeb',
-        wadoUriRoot: 'https://eimaging-eimaging-dicom-service.dicom.azurehealthcareapis.com/v1',
-        qidoRoot: 'https://eimaging-eimaging-dicom-service.dicom.azurehealthcareapis.com/v1',
-        wadoRoot: 'https://eimaging-eimaging-dicom-service.dicom.azurehealthcareapis.com/v1',
+        wadoUriRoot: 'https://eimaging-eimaging-dicom-service.dicom.azurehealthcareapis.com/v2',
+        qidoRoot: 'https://eimaging-eimaging-dicom-service.dicom.azurehealthcareapis.com/v2',
+        wadoRoot: 'https://eimaging-eimaging-dicom-service.dicom.azurehealthcareapis.com/v2',
         qidoSupportsIncludeField: true,
         dicomUploadEnabled: true,
         supportsReject: false,
         imageRendering: 'wadors',
-        thumbnailRendering: 'wadors',
+        thumbnailRendering: 'wadors', // Uses DICOMweb /rendered endpoint for optimized thumbnails
         enableStudyLazyLoad: true,
         supportsFuzzyMatching: true,
         supportsWildcard: false,
