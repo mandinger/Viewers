@@ -50,7 +50,7 @@ window.config = {
         dicomUploadEnabled: true,
         supportsReject: false,
         imageRendering: 'wadors',
-        thumbnailRendering: 'wadors', // Uses DICOMweb /rendered endpoint for optimized thumbnails
+        thumbnailRendering: 'wadors',
         enableStudyLazyLoad: true,
         supportsFuzzyMatching: true,
         supportsWildcard: false,
