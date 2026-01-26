@@ -51,24 +51,39 @@ async function appInit(appConfigOrFunc, defaultExtensions, defaultModes) {
     //todoNichu: tirar esto a un servicio
     const _apiUrl = appConfig.kumoapi.url;
     const _loginEndPoint = appConfig.kumoapi.login_endpoint;
-    const _urlLogin = _apiUrl + _loginEndPoint;
+    const _loginReadWriteEndpoint = appConfig.kumoapi.login_read_write_endpoint;
 
-    const response = await fetch(_urlLogin, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ key: 'value' }),
-    });
+    const fetchAndStoreToken = async (endpoint, cookieName) => {
+      const url = _apiUrl + endpoint;
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ key: 'value' }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const tokenPayload = await response.json();
+
+      document.cookie = `${cookieName}=${JSON.stringify(tokenPayload)}; path=/; max-age=3600; secure; samesite=strict`;
+
+      return tokenPayload;
+    };
+
+    if (_loginEndPoint) {
+      fetchedData = await fetchAndStoreToken(_loginEndPoint, 'fetchedData');
     }
-    fetchedData = await response.json();
 
-    document.cookie = `fetchedData=${JSON.stringify(fetchedData)}; path=/; max-age=3600; secure; samesite=strict`;
+    if (_loginReadWriteEndpoint) {
+      await fetchAndStoreToken(_loginReadWriteEndpoint, 'fetchedDataReadWrite');
+    }
   } catch (error) {
-    console.error('Error fetching data from localhost:5500:', error);
+    console.error('Error fetching authentication data:', error);
     fetchedData = {};
   }
 

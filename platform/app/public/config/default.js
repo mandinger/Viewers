@@ -43,9 +43,9 @@ window.config = {
       configuration: {
         friendlyName: 'eImaging Azure Dicom Web',
         name: 'AzureDicomWeb',
-        wadoUriRoot: 'https://eimaging-eimaging-dicom-service.dicom.azurehealthcareapis.com/v1',
-        qidoRoot: 'https://eimaging-eimaging-dicom-service.dicom.azurehealthcareapis.com/v1',
-        wadoRoot: 'https://eimaging-eimaging-dicom-service.dicom.azurehealthcareapis.com/v1',
+        wadoUriRoot: 'https://eimaging-eimaging-dicom-service.dicom.azurehealthcareapis.com/v2',
+        qidoRoot: 'https://eimaging-eimaging-dicom-service.dicom.azurehealthcareapis.com/v2',
+        wadoRoot: 'https://eimaging-eimaging-dicom-service.dicom.azurehealthcareapis.com/v2',
         qidoSupportsIncludeField: true,
         dicomUploadEnabled: true,
         supportsReject: false,
@@ -219,6 +219,7 @@ window.config = {
   kumoapi: {
     url: 'https://kumo-api.ashycliff-3915e68d.eastus.azurecontainerapps.io/',
     login_endpoint: 'microsoftservice/appLogin',
+    login_read_write_endpoint: 'microsoftservice/appLoginReadWrite',
   },
   oidc: [
     {

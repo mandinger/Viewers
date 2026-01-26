@@ -79,9 +79,9 @@ function createDicomWebApi(dicomWebConfig, servicesManager) {
 
       dicomWebConfigCopy = JSON.parse(JSON.stringify(dicomWebConfig));
 
-      getAuthrorizationHeader = () => {
+      getAuthrorizationHeader = options => {
         const xhrRequestHeaders = {};
-        const authHeaders = userAuthenticationService.getAuthorizationHeader();
+        const authHeaders = userAuthenticationService.getAuthorizationHeader(options);
         if (authHeaders && authHeaders.Authorization) {
           xhrRequestHeaders.Authorization = authHeaders.Authorization;
         }
@@ -107,7 +107,7 @@ function createDicomWebApi(dicomWebConfig, servicesManager) {
         url: dicomWebConfig.qidoRoot,
         staticWado: dicomWebConfig.staticWado,
         singlepart: dicomWebConfig.singlepart,
-        headers: userAuthenticationService.getAuthorizationHeader(),
+        headers: getAuthrorizationHeader(),
         errorInterceptor: errorHandler.getHTTPErrorHandler(),
       };
 
@@ -115,7 +115,7 @@ function createDicomWebApi(dicomWebConfig, servicesManager) {
         url: dicomWebConfig.wadoRoot,
         staticWado: dicomWebConfig.staticWado,
         singlepart: dicomWebConfig.singlepart,
-        headers: userAuthenticationService.getAuthorizationHeader(),
+        headers: getAuthrorizationHeader(),
         errorInterceptor: errorHandler.getHTTPErrorHandler(),
       };
 
@@ -239,7 +239,7 @@ function createDicomWebApi(dicomWebConfig, servicesManager) {
 
     store: {
       dicom: async (dataset, request, dicomDict) => {
-        wadoDicomWebClient.headers = getAuthrorizationHeader();
+        wadoDicomWebClient.headers = getAuthrorizationHeader({ scope: 'readWrite' });
         if (dataset instanceof ArrayBuffer) {
           const options = {
             datasets: [dataset],
