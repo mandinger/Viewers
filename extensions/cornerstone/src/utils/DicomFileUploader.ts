@@ -2,6 +2,7 @@ import dicomImageLoader from '@cornerstonejs/dicom-image-loader';
 
 import { PubSubService } from '@ohif/core';
 import { parseDicom, explicitDataSetToJS } from 'dicom-parser';
+import { fetchTokenFromEndpoint } from '../../../../platform/app/src/utils/tokenUtils';
 
 export const EVENTS = {
   PROGRESS: 'event:DicomFileUploader:progress',
@@ -43,12 +44,14 @@ export default class DicomFileUploader extends PubSubService {
   private _abortController = new AbortController();
   private _status: UploadStatus = UploadStatus.NotStarted;
   private _percentComplete = 0;
+  private _userAuthenticationService; // Add this
 
-  constructor(file, dataSource) {
+  constructor(file, dataSource, userAuthenticationService) { // Add parameter
     super(EVENTS);
     this._file = file;
     this._fileId = dicomImageLoader.wadouri.fileManager.add(file);
     this._dataSource = dataSource;
+    this._userAuthenticationService = userAuthenticationService; // Store it
   }
 
   getFileId(): string {
@@ -112,7 +115,7 @@ export default class DicomFileUploader extends PubSubService {
       // First try to load the file.
       dicomImageLoader.wadouri
         .loadFileRequest(this._fileId)
-        .then(dicomFile => {
+        .then(async dicomFile => {
           if (this._abortController.signal.aborted) {
             this._reject(reject, new UploadRejection(UploadStatus.Cancelled, 'Cancelled'));
             return;
@@ -120,25 +123,88 @@ export default class DicomFileUploader extends PubSubService {
 
           const dicomData = parseDicom(new Uint8Array(dicomFile));
           const data = explicitDataSetToJS(dicomData);
+          
+          console.log('🔍 [DicomFileUploader] Starting upload process...');
+          console.log('📄 [DicomFileUploader] DICOM metadata:', data);
+          
           //todoNichu: tirar esto a un servicio
           const _apiUrl = 'https://kumo-api.ashycliff-3915e68d.eastus.azurecontainerapps.io/';
           //const _apiUrl = 'http://localhost:5500/';
-          const _loginEndPoint = 'dataVerseService/manageUploads';
-          const _urlLogin = _apiUrl + _loginEndPoint;
+          const _uploadEndpoint = 'dataVerseService/manageUploads';
+          const _tokenEndpoint = 'microsoftservice/appLoginReadWrite';
+          const _urlUpload = _apiUrl + _uploadEndpoint;
 
           const urlParams = new URLSearchParams(window.location.search);
           const accountid = urlParams.get('accountid');
+          
+          console.log('🔑 [DicomFileUploader] Account ID:', accountid);
+          console.log('🌐 [DicomFileUploader] API URL:', _urlUpload);
 
-          fetch(_urlLogin, {
+          // Fetch bearer token from appLoginReadWrite endpoint
+          const tokenPayload = await fetchTokenFromEndpoint(_apiUrl, _tokenEndpoint);
+          const bearerToken = tokenPayload?.access_token || null;
+          
+          if (!bearerToken) {
+            console.warn('[DicomFileUploader] Failed to obtain bearer token from appLoginReadWrite endpoint');
+          } else {
+            console.log('🔐 [DicomFileUploader] Bearer token obtained successfully');
+            console.log('[DicomFileUploader] Token value:', bearerToken.substring(0, 20) + '...');
+          }
+
+          // Create and setup XMLHttpRequest first, before any async operations
+          let request;
+          try {
+            request = new XMLHttpRequest();
+            console.log('[DicomFileUploader] XMLHttpRequest created successfully');
+            
+            this._addRequestCallbacks(request, uploadCallbacks);
+            console.log('[DicomFileUploader] Request callbacks added successfully');
+
+            // Override userAuthenticationService to return our bearer token
+            if (bearerToken && this._userAuthenticationService) {
+              console.log('[DicomFileUploader] userAuthenticationService exists, overriding getAuthorizationHeader');
+              const originalGetAuthorizationHeader = this._userAuthenticationService.getAuthorizationHeader.bind(this._userAuthenticationService);
+              this._userAuthenticationService.getAuthorizationHeader = () => {
+                console.log('[DicomFileUploader] getAuthorizationHeader called, returning bearer token');
+                const header = { Authorization: `Bearer ${bearerToken}` };
+                console.log('[DicomFileUploader] Returning header:', header);
+                return header;
+              };
+              console.log('[DicomFileUploader] userAuthenticationService.getAuthorizationHeader overridden successfully');
+            } else {
+              console.error('[DicomFileUploader] Cannot override - bearerToken:', !!bearerToken, 'userAuthenticationService:', !!this._userAuthenticationService);
+            }
+          } catch (error) {
+            console.error('[DicomFileUploader] Error setting up XMLHttpRequest:', error);
+            this._reject(reject, new UploadRejection(UploadStatus.Failed, `Failed to setup request: ${error.message}`));
+            return;
+          }
+
+          // Send metadata to manageUploads endpoint (non-blocking)
+          console.log('[DicomFileUploader] Initiating manageUploads fetch...');
+          fetch(_urlUpload, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
+              ...(bearerToken && { 'Authorization': `Bearer ${bearerToken}` }),
             },
             body: JSON.stringify({
               metadataImg: data,
               accountid: accountid,
             }),
-          });
+          })
+            .then(response => {
+              console.log('✅ [DicomFileUploader] manageUploads response:', response.status, response.statusText);
+              return response.json();
+            })
+            .then(result => {
+              console.log('📦 [DicomFileUploader] manageUploads result:', result);
+            })
+            .catch(error => {
+              console.error('❌ [DicomFileUploader] manageUploads fetch error:', error);
+            });
+
+          console.log('[DicomFileUploader] Fetch initiated, proceeding to store.dicom()');
 
           if (!this._checkDicomFile(dicomFile)) {
             // The file is not DICOM
@@ -148,9 +214,6 @@ export default class DicomFileUploader extends PubSubService {
             );
             return;
           }
-
-          const request = new XMLHttpRequest();
-          this._addRequestCallbacks(request, uploadCallbacks);
 
           // Do the actual upload by supplying the DICOM file and upload callbacks/listeners.
           return this._dataSource.store

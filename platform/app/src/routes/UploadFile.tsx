@@ -26,6 +26,7 @@ function UploadFile({ dataSource, servicesManager, onRefresh }: withAppTypes) {
   const UploadComponent = dicomUploadComponent
     ? dicomUploadComponent.bind(null, {
       dataSource,
+      servicesManager, // Add this
       onComplete: () => {
         onRefresh();
       },
