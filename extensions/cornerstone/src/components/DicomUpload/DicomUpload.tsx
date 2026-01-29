@@ -13,7 +13,7 @@ type DicomUploadProps = {
   dataSource;
   onComplete: () => void;
   onStarted: () => void;
-  servicesManager?: any; // Add this
+  servicesManager?: any;
 };
 
 function DicomUpload({ dataSource, onComplete, onStarted, servicesManager }: DicomUploadProps): ReactElement {

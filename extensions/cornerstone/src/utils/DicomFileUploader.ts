@@ -137,9 +137,6 @@ export default class DicomFileUploader extends PubSubService {
           const urlParams = new URLSearchParams(window.location.search);
           const accountid = urlParams.get('accountid');
           
-          console.log('🔑 [DicomFileUploader] Account ID:', accountid);
-          console.log('🌐 [DicomFileUploader] API URL:', _urlUpload);
-
           // Fetch bearer token from appLoginReadWrite endpoint
           const tokenPayload = await fetchTokenFromEndpoint(_apiUrl, _tokenEndpoint);
           const bearerToken = tokenPayload?.access_token || null;
@@ -147,8 +144,7 @@ export default class DicomFileUploader extends PubSubService {
           if (!bearerToken) {
             console.warn('[DicomFileUploader] Failed to obtain bearer token from appLoginReadWrite endpoint');
           } else {
-            console.log('🔐 [DicomFileUploader] Bearer token obtained successfully');
-            console.log('[DicomFileUploader] Token value:', bearerToken.substring(0, 20) + '...');
+            console.log('[DicomFileUploader] Bearer token obtained successfully');
           }
 
           // Create and setup XMLHttpRequest first, before any async operations
@@ -194,14 +190,14 @@ export default class DicomFileUploader extends PubSubService {
             }),
           })
             .then(response => {
-              console.log('✅ [DicomFileUploader] manageUploads response:', response.status, response.statusText);
+              console.log('[DicomFileUploader] manageUploads response:', response.status, response.statusText);
               return response.json();
             })
             .then(result => {
-              console.log('📦 [DicomFileUploader] manageUploads result:', result);
+              console.log('[DicomFileUploader] manageUploads result:', result);
             })
             .catch(error => {
-              console.error('❌ [DicomFileUploader] manageUploads fetch error:', error);
+              console.error('[DicomFileUploader] manageUploads fetch error:', error);
             });
 
           console.log('[DicomFileUploader] Fetch initiated, proceeding to store.dicom()');

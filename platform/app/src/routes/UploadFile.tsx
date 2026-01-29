@@ -1,14 +1,16 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Header } from '@ohif/ui';
 import { useAppConfig } from '@state';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import { Types } from '@ohif/ui';
 
-function UploadFile({ dataSource, servicesManager, onRefresh }: withAppTypes) {
+function UploadFile({ servicesManager, dataSource }: withAppTypes) {
   const { t } = useTranslation();
   const [appConfig] = useAppConfig();
+  const navigate = useNavigate();
+  const [uploadKey, setUploadKey] = useState(0);
   const PatientInfoVisibility = Types.PatientInfoVisibility;
 
   const location = useLocation(); // Obtiene el objeto location
@@ -26,9 +28,10 @@ function UploadFile({ dataSource, servicesManager, onRefresh }: withAppTypes) {
   const UploadComponent = dicomUploadComponent
     ? dicomUploadComponent.bind(null, {
       dataSource,
-      servicesManager, // Add this
+      servicesManager,
       onComplete: () => {
-        onRefresh();
+        // Reset the upload component to allow uploading more files
+        setUploadKey(prev => prev + 1);
       },
       onStarted: () => { },
     })
@@ -42,20 +45,24 @@ function UploadFile({ dataSource, servicesManager, onRefresh }: withAppTypes) {
 
   return (
     <div className="flex h-screen flex-col bg-black">
+      <Header
+        isSticky
+        menuOptions={[]}
+        isReturnEnabled={true}
+        onClickReturn={() => navigate('/')}
+        WhiteLabeling={appConfig.whiteLabeling}
+        showPatientInfo={PatientInfoVisibility.DISABLED}
+      />
       <div className="flex flex-grow">
-        <UploadComponent />
+        {UploadComponent && <UploadComponent key={uploadKey} />}
       </div>
     </div>
   );
 }
 
 UploadFile.propTypes = {
-  data: PropTypes.array.isRequired,
-  dataSource: PropTypes.shape({
-    query: PropTypes.object.isRequired,
-  }).isRequired,
-  isLoadingData: PropTypes.bool.isRequired,
   servicesManager: PropTypes.object.isRequired,
+  dataSource: PropTypes.object.isRequired,
 };
 
 export default UploadFile;
