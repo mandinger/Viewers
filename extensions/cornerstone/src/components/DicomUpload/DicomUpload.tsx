@@ -7,6 +7,13 @@ import DicomFileUploader from '../../utils/DicomFileUploader';
 import DicomUploadProgress from './DicomUploadProgress';
 import { Button, ButtonEnums } from '@ohif/ui';
 import dcmjs from 'dcmjs';
+import StudyInfoForm, { StudyFormData } from './StudyInfoForm';
+import {
+  generateDicomUID,
+  getSopClassUID,
+  createDicomMetaInfo,
+  DICOM_SOP_CLASS_UIDS,
+} from '../../utils/dicomMetadata';
 import './DicomUpload.css';
 
 type DicomUploadProps = {
@@ -20,6 +27,8 @@ function DicomUpload({ dataSource, onComplete, onStarted, servicesManager }: Dic
   const baseClassNames = 'h-full w-full flex flex-col bg-black select-none';
   const [dicomFileUploaderArr, setDicomFileUploaderArr] = useState([]);
   const imageInputRef = useRef<HTMLInputElement>(null);
+  const [showStudyForm, setShowStudyForm] = useState(false);
+  const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null);
 
   const onDrop = useCallback(async acceptedFiles => {
     onStarted();
@@ -30,7 +39,7 @@ function DicomUpload({ dataSource, onComplete, onStarted, servicesManager }: Dic
   }, [dataSource, servicesManager]);
 
   // SPIKE: Convert PNG/JPG to DICOM and download
-  const convertImageToDicom = useCallback(async (imageFile: File) => {
+  const convertImageToDicom = useCallback(async (imageFile: File, studyData: StudyFormData) => {
     try {
       // Read image file
       const arrayBuffer = await imageFile.arrayBuffer();
@@ -56,43 +65,38 @@ function DicomUpload({ dataSource, onComplete, onStarted, servicesManager }: Dic
 
       URL.revokeObjectURL(imageUrl);
 
-      // Generate UIDs
-      const generateUID = () => {
-        const timestamp = Date.now().toString();
-        const random = Math.floor(Math.random() * 1000000).toString();
-        return `1.2.840.113619.2.408.${timestamp}.${random}`;
-      };
+      // Generate UIDs using production-ready utility
+      const studyInstanceUID = generateDicomUID();
+      const seriesInstanceUID = generateDicomUID();
+      const sopInstanceUID = generateDicomUID();
 
-      const studyInstanceUID = generateUID();
-      const seriesInstanceUID = generateUID();
-      const sopInstanceUID = generateUID();
-
-      // Get today's date in DICOM format (YYYYMMDD)
-      const today = new Date();
-      const studyDate = today.toISOString().slice(0, 10).replace(/-/g, '');
-      const studyTime = today.toTimeString().slice(0, 8).replace(/:/g, '');
+      // Convert study date and time to DICOM format (YYYYMMDD and HHMMSS)
+      const studyDate = studyData.studyDate.replace(/-/g, '');
+      const studyTime = studyData.studyTime;
+      
+      console.log('Creating DICOM with modality:', studyData.modality);
 
       // Create DICOM dataset using dcmjs
       const dataset = {
         // Patient Module
-        PatientName: 'TEST^PATIENT',
-        PatientID: 'TEST123',
-        PatientBirthDate: '',
-        PatientSex: '',
+        PatientName: studyData.patientName,
+        PatientID: studyData.patientID,
+        PatientBirthDate: studyData.birthDate.replace(/-/g, ''),
+        PatientSex: studyData.gender,
 
         // General Study Module
         StudyInstanceUID: studyInstanceUID,
         StudyDate: studyDate,
         StudyTime: studyTime,
-        ReferringPhysicianName: '',
+        ReferringPhysicianName: studyData.referringPhysician,
         StudyID: '1',
         AccessionNumber: '',
-        StudyDescription: 'Test Study from Image Conversion',
+        StudyDescription: studyData.description,
 
         // General Series Module
         SeriesInstanceUID: seriesInstanceUID,
         SeriesNumber: '1',
-        Modality: 'OT', // Other
+        Modality: studyData.modality,
 
         // General Equipment Module
         Manufacturer: 'OHIF',
@@ -117,20 +121,13 @@ function DicomUpload({ dataSource, onComplete, onStarted, servicesManager }: Dic
         PlanarConfiguration: 0,
 
         // SOP Common Module
-        SOPClassUID: '1.2.840.10008.5.1.4.1.1.7', // Secondary Capture Image Storage
+        SOPClassUID: getSopClassUID('secondary_capture'),
         SOPInstanceUID: sopInstanceUID,
 
         // Pixel Data
         PixelData: [pixelData.buffer],
 
-        _meta: {
-          FileMetaInformationVersion: new Uint8Array([0, 1]).buffer,
-          TransferSyntaxUID: { Value: ['1.2.840.10008.1.2.1'] }, // Explicit VR Little Endian
-          ImplementationClassUID: { Value: ['1.2.840.113619.6.408'] },
-          ImplementationVersionName: { Value: ['OHIF-IMG-CONVERT'] },
-          MediaStorageSOPClassUID: { Value: ['1.2.840.10008.5.1.4.1.1.7'] },
-          MediaStorageSOPInstanceUID: { Value: [sopInstanceUID] },
-        },
+        _meta: createDicomMetaInfo(DICOM_SOP_CLASS_UIDS.SECONDARY_CAPTURE_IMAGE, sopInstanceUID),
       };
 
       // Convert to DICOM P10 format using dcmjs
@@ -138,6 +135,8 @@ function DicomUpload({ dataSource, onComplete, onStarted, servicesManager }: Dic
       const dicomDict = new dcmjs.data.DicomDict(denaturalized);
       dicomDict.dict = dcmjs.data.DicomMetaDictionary.denaturalizeDataset(dataset);
       const part10Buffer = dicomDict.write();
+      
+      console.log('✅ DICOM dataset created with Modality:', dataset.Modality);
 
       // Trigger download
       const downloadBlob = new Blob([part10Buffer], { type: 'application/dicom' });
@@ -167,13 +166,31 @@ function DicomUpload({ dataSource, onComplete, onStarted, servicesManager }: Dic
     (event: React.ChangeEvent<HTMLInputElement>) => {
       const file = event.target.files?.[0];
       if (file) {
-        convertImageToDicom(file);
+        setSelectedImageFile(file);
+        setShowStudyForm(true);
       }
       // Reset input so same file can be selected again
       event.target.value = '';
     },
-    [convertImageToDicom]
+    []
   );
+
+  const handleStudyFormSubmit = useCallback(
+    (studyData: StudyFormData) => {
+      console.log('🔄 Converting image with study data:', studyData);
+      if (selectedImageFile) {
+        convertImageToDicom(selectedImageFile, studyData);
+        setShowStudyForm(false);
+        setSelectedImageFile(null);
+      }
+    },
+    [selectedImageFile, convertImageToDicom]
+  );
+
+  const handleStudyFormCancel = useCallback(() => {
+    setShowStudyForm(false);
+    setSelectedImageFile(null);
+  }, []);
 
   const getDropZoneComponent = (): ReactElement => {
     return (
@@ -259,6 +276,9 @@ function DicomUpload({ dataSource, onComplete, onStarted, servicesManager }: Dic
 
   return (
     <>
+      {showStudyForm && (
+        <StudyInfoForm onSubmit={handleStudyFormSubmit} onCancel={handleStudyFormCancel} />
+      )}
       {dicomFileUploaderArr.length ? (
         <div className={classNames('h-[calc(100vh-300px)]', baseClassNames)}>
           <DicomUploadProgress
