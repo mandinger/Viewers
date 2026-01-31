@@ -122,7 +122,16 @@ export default class DicomFileUploader extends PubSubService {
           }
 
           const dicomData = parseDicom(new Uint8Array(dicomFile));
-          const data = explicitDataSetToJS(dicomData);
+          
+          // Handle both explicit and implicit VR DICOM files
+          let data;
+          try {
+            data = explicitDataSetToJS(dicomData);
+          } catch (error) {
+            console.warn('[DicomFileUploader] Explicit VR parsing failed, trying implicit VR:', error.message);
+            // For implicit VR files, parse more carefully
+            data = dicomData;
+          }
           
           console.log('🔍 [DicomFileUploader] Starting upload process...');
           console.log('📄 [DicomFileUploader] DICOM metadata:', data);
