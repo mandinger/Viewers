@@ -34,6 +34,7 @@ export const IMPLEMENTATION_VERSION_NAME = 'OHIF-3.9.0';
  */
 export const DICOM_SOP_CLASS_UIDS = {
   SECONDARY_CAPTURE_IMAGE: '1.2.840.10008.5.1.4.1.1.7',
+  MULTIFRAME_TRUE_COLOR_SECONDARY_CAPTURE_IMAGE: '1.2.840.10008.5.1.4.1.1.7.4',
   CT_IMAGE: '1.2.840.10008.5.1.4.1.1.2',
   MR_IMAGE: '1.2.840.10008.5.1.4.1.1.4',
   ULTRASOUND_IMAGE: '1.2.840.10008.5.1.4.1.1.6.4',
@@ -65,20 +66,25 @@ export const DICOM_TRANSFER_SYNTAX_UIDS = {
  * - Complies with DICOM UID format rules
  */
 export const generateDicomUID = (): string => {
-  const timestamp = Date.now().toString();
-  const random = Math.floor(Math.random() * 100000000).toString();
-  return `${OHIF_UID_ROOT}.${timestamp}.${random}`;
+  // Use seconds to keep component under 2^31
+  const timestampSeconds = Math.floor(Date.now() / 1000);
+  const random = Math.floor(Math.random() * 1000000000);
+  return `${OHIF_UID_ROOT}.${timestampSeconds}.${random}`;
 };
 
 /**
  * Get SOP Class UID based on image type
  */
-export const getSopClassUID = (imageFormat: 'secondary_capture' | 'jpeg' | 'png' = 'secondary_capture'): string => {
+export const getSopClassUID = (
+  imageFormat: 'secondary_capture' | 'secondary_capture_multiframe' | 'jpeg' | 'png' = 'secondary_capture'
+): string => {
   switch (imageFormat) {
     case 'jpeg':
       return DICOM_SOP_CLASS_UIDS.JPEG_BASELINE;
     case 'png':
       return DICOM_SOP_CLASS_UIDS.PNG;
+    case 'secondary_capture_multiframe':
+      return DICOM_SOP_CLASS_UIDS.MULTIFRAME_TRUE_COLOR_SECONDARY_CAPTURE_IMAGE;
     case 'secondary_capture':
     default:
       return DICOM_SOP_CLASS_UIDS.SECONDARY_CAPTURE_IMAGE;

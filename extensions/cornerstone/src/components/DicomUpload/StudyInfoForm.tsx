@@ -35,7 +35,7 @@ export const StudyInfoForm = ({ onSubmit, onCancel, fileCount = 1 }: StudyInfoFo
     ownerName: '',
     description: '',
     studyDate: new Date().toISOString().split('T')[0],
-    studyTime: new Date().toTimeString().slice(0, 5).replace(':', ''),
+    studyTime: new Date().toTimeString().slice(0, 5),
     institutionName: '',
     gender: '',
     referringPhysician: '',
@@ -172,7 +172,7 @@ export const StudyInfoForm = ({ onSubmit, onCancel, fileCount = 1 }: StudyInfoFo
             </div>
           </div>
 
-          {/* Study Date and Institution Name */}
+          {/* Study Date/Time and Institution Name */}
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-gray-200 mb-2">
@@ -183,6 +183,12 @@ export const StudyInfoForm = ({ onSubmit, onCancel, fileCount = 1 }: StudyInfoFo
                 value={formData.studyDate}
                 onChange={(e) => handleInputChange('studyDate', e.target.value)}
                 className="w-full px-3 py-2 bg-gray-700 text-white rounded border border-gray-600"
+              />
+              <input
+                type="time"
+                value={formData.studyTime}
+                onChange={(e) => handleInputChange('studyTime', e.target.value)}
+                className="w-full px-3 py-2 bg-gray-700 text-white rounded border border-gray-600 mt-3"
               />
             </div>
             <div>
@@ -207,7 +213,9 @@ export const StudyInfoForm = ({ onSubmit, onCancel, fileCount = 1 }: StudyInfoFo
               >
                 <option value="">Select Gender</option>
                 <option value="M">Male</option>
+                <option value="MC">Male Castrated</option>
                 <option value="F">Female</option>
+                <option value="FS">Female Spayed</option>
                 <option value="O">Other</option>
               </select>
             </div>
@@ -220,32 +228,6 @@ export const StudyInfoForm = ({ onSubmit, onCancel, fileCount = 1 }: StudyInfoFo
                 className="w-full px-3 py-2 bg-gray-700 text-white rounded border border-gray-600"
               />
             </div>
-          </div>
-
-          {/* Modality */}
-          <div>
-            <label className="block text-gray-200 mb-2">Modality</label>
-            <select
-              value={formData.modality}
-              onChange={(e) => {
-                const newValue = e.target.value;
-                console.log('🔬 Modality changed to:', newValue);
-                handleInputChange('modality', newValue);
-              }}
-              className="w-full px-3 py-2 bg-gray-700 text-white rounded border border-gray-600"
-            >
-              <option value="CR">CR - Computed Radiography</option>
-              <option value="CT">CT - Computed Tomography</option>
-              <option value="DX">DX - Digital Radiography</option>
-              <option value="MG">MG - Mammography</option>
-              <option value="MR">MR - Magnetic Resonance</option>
-              <option value="NM">NM - Nuclear Medicine</option>
-              <option value="OT">OT - Other</option>
-              <option value="PT">PT - Positron Emission Tomography</option>
-              <option value="SC">SC - Secondary Capture</option>
-              <option value="US">US - Ultrasound</option>
-              <option value="XA">XA - X-Ray Angiography</option>
-            </select>
           </div>
 
           {/* Birth Date */}

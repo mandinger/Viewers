@@ -31,7 +31,12 @@ function DicomUpload({ dataSource, onComplete, onStarted, servicesManager }: Dic
 
   const isImageFile = (file: File): boolean => {
     const imageTypes = ['image/jpeg', 'image/png', 'image/jpg'];
-    return imageTypes.includes(file.type);
+    if (imageTypes.includes(file.type)) {
+      return true;
+    }
+
+    const fileName = file.name?.toLowerCase() || '';
+    return ['.jpg', '.jpeg', '.png'].some(ext => fileName.endsWith(ext));
   };
 
   const onDrop = useCallback(async acceptedFiles => {
@@ -49,6 +54,7 @@ function DicomUpload({ dataSource, onComplete, onStarted, servicesManager }: Dic
     
     // If there are image files, show form and store them
     if (imageFiles.length > 0) {
+      setDicomFileUploaderArr([]);
       setSelectedImageFiles(imageFiles);
       setShowStudyForm(true);
     } else if (uploaders.length > 0) {
@@ -63,8 +69,18 @@ function DicomUpload({ dataSource, onComplete, onStarted, servicesManager }: Dic
       const userAuthenticationService = servicesManager?.services?.userAuthenticationService;
       const uploadersFromDicom: any[] = [];
 
-      // Process each image file
-      for (const imageFile of imageFiles) {
+      // Generate shared identifiers for this batch
+      const studyInstanceUID = generateDicomUID();
+      console.log('🧪 Batch StudyInstanceUID:', studyInstanceUID, 'Images:', imageFiles.length);
+
+      // Convert study date and time to DICOM format (YYYYMMDD and HHMM)
+      const studyDate = studyData.studyDate.replace(/-/g, '');
+      const studyTime = studyData.studyTime.replace(':', '');
+      const modality = 'OT';
+
+      // Process each image file into its own instance
+      for (let index = 0; index < imageFiles.length; index += 1) {
+        const imageFile = imageFiles[index];
         // Read image file
         const arrayBuffer = await imageFile.arrayBuffer();
         const blob = new Blob([arrayBuffer]);
@@ -99,18 +115,12 @@ function DicomUpload({ dataSource, onComplete, onStarted, servicesManager }: Dic
 
         URL.revokeObjectURL(imageUrl);
 
-        // Generate UIDs using production-ready utility
-        const studyInstanceUID = generateDicomUID();
+        // Generate unique Series and SOP Instance UIDs per image
         const seriesInstanceUID = generateDicomUID();
+        console.log('🧪 Image', index + 1, 'SeriesInstanceUID:', seriesInstanceUID);
         const sopInstanceUID = generateDicomUID();
 
-        // Convert study date and time to DICOM format (YYYYMMDD and HHMMSS)
-        const studyDate = studyData.studyDate.replace(/-/g, '');
-        const studyTime = studyData.studyTime;
-        
-        console.log('Creating DICOM with modality:', studyData.modality);
-
-        // Create DICOM dataset using dcmjs
+        // Create DICOM dataset using dcmjs (single-frame)
         const dataset = {
           // Patient Module
           PatientName: studyData.patientName,
@@ -129,8 +139,8 @@ function DicomUpload({ dataSource, onComplete, onStarted, servicesManager }: Dic
 
           // General Series Module
           SeriesInstanceUID: seriesInstanceUID,
-          SeriesNumber: '1',
-          Modality: studyData.modality,
+          SeriesNumber: `${index + 1}`,
+          Modality: modality,
 
           // General Equipment Module
           Manufacturer: 'OHIF',
@@ -140,7 +150,7 @@ function DicomUpload({ dataSource, onComplete, onStarted, servicesManager }: Dic
           ConversionType: 'WSD', // Workstation
 
           // General Image Module
-          InstanceNumber: '1',
+          InstanceNumber: `${index + 1}`,
           PatientOrientation: '',
 
           // Image Pixel Module
@@ -170,7 +180,7 @@ function DicomUpload({ dataSource, onComplete, onStarted, servicesManager }: Dic
 
         const dicomDict = new dcmjs.data.DicomDict(denaturalized);
         const part10Buffer = dicomDict.write();
-        
+
         console.log('✅ DICOM dataset created with Modality:', dataset.Modality, 'Dimensions:', img.width, 'x', img.height);
 
         // Create a DicomFileUploader with the converted DICOM blob
@@ -180,8 +190,8 @@ function DicomUpload({ dataSource, onComplete, onStarted, servicesManager }: Dic
         );
       }
 
-      // Update state with all uploaders (existing DICOM + converted images)
-      setDicomFileUploaderArr(prevUploadersArr => [...prevUploadersArr, ...uploadersFromDicom]);
+      // Update state with the single-series uploaders for this batch
+      setDicomFileUploaderArr(uploadersFromDicom);
       
       console.log('Successfully converted all images to DICOM');
     } catch (error) {
