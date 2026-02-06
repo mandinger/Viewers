@@ -118,9 +118,9 @@ function DicomUpload({ dataSource, onComplete, onStarted, servicesManager }: Dic
         URL.revokeObjectURL(imageUrl);
 
         // Generate unique Series and SOP Instance UIDs per image
-        const seriesInstanceUID = generateSeriesInstanceUID(studyInstanceUID, 4);
+        const seriesInstanceUID = generateSeriesInstanceUID(studyInstanceUID, index);
         console.log('Image', index + 1, 'SeriesInstanceUID:', seriesInstanceUID);
-        const sopInstanceUID = generateSopInstanceUID(studyInstanceUID, 4, index);
+        const sopInstanceUID = generateSopInstanceUID(studyInstanceUID, index, index);
 
         // Create DICOM dataset using dcmjs (single-frame)
         const dataset = {
