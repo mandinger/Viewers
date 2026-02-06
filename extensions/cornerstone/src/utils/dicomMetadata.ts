@@ -4,23 +4,17 @@
  */
 
 /**
- * DICOM UID Root for this organization
- * From existing study: 1.2.410.200018.109.1.1.365
- * Organization root: 1.2.410.200018 (South Korean healthcare system)
- * 
- * Format explanation:
- * - 1.2.410: Country code (410 = South Korea)
- * - 200018: Organization identifier
- * - Additional components: Application/department specific identifiers
+ * Custom UID Root for generated image-to-DICOM studies
+ * Format requested by user: 1.2.276.0.2783747.3.1.2.<YYYYMMDD>.<HHMMSSmmmm>.<rand>
  */
-export const OHIF_UID_ROOT = '1.2.410.200018.109.1.1';
+export const CUSTOM_UID_ROOT = '1.2.276.0.2783747.3.1.2';
 
 /**
  * Implementation Class UID - Identifies the implementation of the DICOM standard
- * Should be unique to your organization/application
+ * Should be unique to organization/application
  * Format: UID_ROOT.application_id
  */
-export const IMPLEMENTATION_CLASS_UID = `${OHIF_UID_ROOT}.1`;
+export const IMPLEMENTATION_CLASS_UID = `${CUSTOM_UID_ROOT}.2`;
 
 /**
  * Implementation Version Name - Identifies the version of the DICOM implementation
@@ -56,20 +50,43 @@ export const DICOM_TRANSFER_SYNTAX_UIDS = {
 } as const;
 
 /**
- * Generate a DICOM UID
- * Format: UID_ROOT.component1.component2...componentN
- * Where each component is < 2^31
- * 
- * Production-ready implementation:
- * - Uses timestamp for uniqueness
- * - Uses random number for additional entropy
- * - Complies with DICOM UID format rules
+ * Generate a unique Study Instance UID based on current date/time and random component
+ * Example:
+ *  StudyInstanceUID: 1.2.276.0.2783747.3.1.2.20260204.2121533110.8046
+ *  SeriesInstanceUID: {StudyInstanceUID}.4.0
+ *  SOPInstanceUID: {StudyInstanceUID}.4
  */
-export const generateDicomUID = (): string => {
-  // Use seconds to keep component under 2^31
-  const timestampSeconds = Math.floor(Date.now() / 1000);
-  const random = Math.floor(Math.random() * 1000000000);
-  return `${OHIF_UID_ROOT}.${timestampSeconds}.${random}`;
+export const generateStudyInstanceUID = (studyDate?: string, studyTime?: string): string => {
+  const now = new Date();
+  const datePart = studyDate && studyDate.length === 8
+    ? studyDate
+    : `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}`;
+
+  const timeSource = studyTime && studyTime.length >= 4 ? studyTime : '';
+  const cleanTime = timeSource.replace(/:/g, '');
+  const hh = cleanTime.slice(0, 2) || String(now.getHours()).padStart(2, '0');
+  const mm = cleanTime.slice(2, 4) || String(now.getMinutes()).padStart(2, '0');
+  const ss = cleanTime.slice(4, 6) || String(now.getSeconds()).padStart(2, '0');
+  const mmm = String(now.getMilliseconds()).padStart(3, '0');
+
+  // Keep component under 2^31 by limiting random digits
+  const random = Math.floor(Math.random() * 10000);
+  return `${CUSTOM_UID_ROOT}.${datePart}.${hh}${mm}${ss}${mmm}.${random}`;
+};
+
+export const generateSeriesInstanceUID = (studyInstanceUID: string, seriesNumber: string | number = 4): string => {
+  return `${studyInstanceUID}.${seriesNumber}.0`;
+};
+
+export const generateSopInstanceUID = (
+  studyInstanceUID: string,
+  sopNumber: string | number = 4,
+  instanceIndex?: number
+): string => {
+  if (instanceIndex !== undefined && instanceIndex > 0) {
+    return `${studyInstanceUID}.${sopNumber}.${instanceIndex + 1}`;
+  }
+  return `${studyInstanceUID}.${sopNumber}`;
 };
 
 /**

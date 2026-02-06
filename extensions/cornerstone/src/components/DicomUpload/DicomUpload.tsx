@@ -9,7 +9,9 @@ import { Button, ButtonEnums } from '@ohif/ui';
 import dcmjs from 'dcmjs';
 import StudyInfoForm, { StudyFormData } from './StudyInfoForm';
 import {
-  generateDicomUID,
+  generateStudyInstanceUID,
+  generateSeriesInstanceUID,
+  generateSopInstanceUID,
   getSopClassUID,
   createDicomMetaInfo,
   DICOM_SOP_CLASS_UIDS,
@@ -70,13 +72,13 @@ function DicomUpload({ dataSource, onComplete, onStarted, servicesManager }: Dic
       const uploadersFromDicom: any[] = [];
 
       // Generate shared identifiers for this batch
-      const studyInstanceUID = generateDicomUID();
-      console.log('🧪 Batch StudyInstanceUID:', studyInstanceUID, 'Images:', imageFiles.length);
+  
 
       // Convert study date and time to DICOM format (YYYYMMDD and HHMM)
       const studyDate = studyData.studyDate.replace(/-/g, '');
       const studyTime = studyData.studyTime.replace(':', '');
-      const modality = 'OT';
+      const studyInstanceUID = generateStudyInstanceUID(studyDate, studyTime);
+      const modality = studyData.modality || 'OT';
 
       // Process each image file into its own instance
       for (let index = 0; index < imageFiles.length; index += 1) {
@@ -116,24 +118,27 @@ function DicomUpload({ dataSource, onComplete, onStarted, servicesManager }: Dic
         URL.revokeObjectURL(imageUrl);
 
         // Generate unique Series and SOP Instance UIDs per image
-        const seriesInstanceUID = generateDicomUID();
-        console.log('🧪 Image', index + 1, 'SeriesInstanceUID:', seriesInstanceUID);
-        const sopInstanceUID = generateDicomUID();
+        const seriesInstanceUID = generateSeriesInstanceUID(studyInstanceUID, 4);
+        console.log('Image', index + 1, 'SeriesInstanceUID:', seriesInstanceUID);
+        const sopInstanceUID = generateSopInstanceUID(studyInstanceUID, 4, index);
 
         // Create DICOM dataset using dcmjs (single-frame)
         const dataset = {
           // Patient Module
           PatientName: studyData.patientName,
           PatientID: studyData.patientID,
-          PatientBirthDate: studyData.birthDate.replace(/-/g, ''),
+          PatientBirthDate: studyData.birthDate ? studyData.birthDate.replace(/-/g, '') : '',
           PatientSex: studyData.gender,
+          ResponsiblePerson: studyData.ownerName,
+          ResponsiblePersonRole: 'OWNER',
 
           // General Study Module
           StudyInstanceUID: studyInstanceUID,
           StudyDate: studyDate,
           StudyTime: studyTime,
+          InstitutionName: studyData.institutionName,
           ReferringPhysicianName: studyData.referringPhysician,
-          StudyID: '1',
+          StudyID: '',
           AccessionNumber: '',
           StudyDescription: studyData.description,
 
