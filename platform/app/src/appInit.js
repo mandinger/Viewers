@@ -25,6 +25,7 @@ import {
 } from '@ohif/core';
 
 import loadModules, { loadModule as peerImport } from './pluginImports';
+import { fetchTokenFromEndpoint } from './utils/tokenUtils';
 
 /**
  * @param {object|func} appConfigOrFunc - application configuration, or a function that returns application configuration
@@ -54,21 +55,11 @@ async function appInit(appConfigOrFunc, defaultExtensions, defaultModes) {
     const _loginReadWriteEndpoint = appConfig.kumoapi.login_read_write_endpoint;
 
     const fetchAndStoreToken = async (endpoint, cookieName) => {
-      const url = _apiUrl + endpoint;
+      const tokenPayload = await fetchTokenFromEndpoint(_apiUrl, endpoint);
 
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ key: 'value' }),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+      if (!tokenPayload) {
+        throw new Error(`Failed to fetch token from ${endpoint}`);
       }
-
-      const tokenPayload = await response.json();
 
       document.cookie = `${cookieName}=${JSON.stringify(tokenPayload)}; path=/; max-age=3600; secure; samesite=strict`;
 

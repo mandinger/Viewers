@@ -114,7 +114,7 @@ const createRoutes = ({
   const captureRoute = {
     path: '/fileUpload',
     children: DataSourceWrapper,
-    props: { children: UploadFile },
+    props: { children: UploadFile, skipStudiesFetch: true },
   };
 
   const allRoutes = [

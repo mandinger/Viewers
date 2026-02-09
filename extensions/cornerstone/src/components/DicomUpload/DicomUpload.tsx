@@ -13,17 +13,21 @@ type DicomUploadProps = {
   dataSource;
   onComplete: () => void;
   onStarted: () => void;
+  servicesManager?: any;
 };
 
-function DicomUpload({ dataSource, onComplete, onStarted }: DicomUploadProps): ReactElement {
+function DicomUpload({ dataSource, onComplete, onStarted, servicesManager }: DicomUploadProps): ReactElement {
   const baseClassNames = 'h-full w-full flex flex-col bg-black select-none';
   const [dicomFileUploaderArr, setDicomFileUploaderArr] = useState([]);
   const imageInputRef = useRef<HTMLInputElement>(null);
 
   const onDrop = useCallback(async acceptedFiles => {
     onStarted();
-    setDicomFileUploaderArr(acceptedFiles.map(file => new DicomFileUploader(file, dataSource)));
-  }, []);
+    const userAuthenticationService = servicesManager?.services?.userAuthenticationService;
+    setDicomFileUploaderArr(
+      acceptedFiles.map(file => new DicomFileUploader(file, dataSource, userAuthenticationService))
+    );
+  }, [dataSource, servicesManager]);
 
   // SPIKE: Convert PNG/JPG to DICOM and download
   const convertImageToDicom = useCallback(async (imageFile: File) => {

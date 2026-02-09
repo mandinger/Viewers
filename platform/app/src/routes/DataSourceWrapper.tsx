@@ -145,6 +145,12 @@ function DataSourceWrapper(props: withAppTypes) {
       return;
     }
 
+    // Skip fetching studies if skipStudiesFetch prop is set
+    if (props.skipStudiesFetch) {
+      setIsLoading(false);
+      return;
+    }
+
     const queryFilterValues = _getQueryFilterValues(location.search, STUDIES_LIMIT);
 
     // 204: no content
