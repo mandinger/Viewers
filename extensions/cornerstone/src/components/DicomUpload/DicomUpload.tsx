@@ -15,6 +15,7 @@ import {
   getSopClassUID,
   createDicomMetaInfo,
   DICOM_SOP_CLASS_UIDS,
+  IMPLEMENTATION_VERSION_NAME,
 } from '../../utils/dicomMetadata';
 import './DicomUpload.css';
 
@@ -79,6 +80,13 @@ function DicomUpload({ dataSource, onComplete, onStarted, servicesManager }: Dic
       const studyTime = studyData.studyTime.replace(':', '');
       const studyInstanceUID = generateStudyInstanceUID(studyDate, studyTime);
       const modality = studyData.modality || 'OT';
+      const frameOfReferenceUID = `${studyInstanceUID}.1`;
+      const seriesDate = studyDate;
+      const seriesTime = studyTime;
+      const acquisitionDate = studyDate;
+      const acquisitionTime = studyTime;
+      const contentDate = studyDate;
+      const contentTime = studyTime;
 
       // Process each image file into its own instance
       for (let index = 0; index < imageFiles.length; index += 1) {
@@ -141,22 +149,39 @@ function DicomUpload({ dataSource, onComplete, onStarted, servicesManager }: Dic
           StudyID: '',
           AccessionNumber: '',
           StudyDescription: studyData.description,
+          ProtocolName: '',
 
           // General Series Module
           SeriesInstanceUID: seriesInstanceUID,
           SeriesNumber: `${index + 1}`,
           Modality: modality,
+          SeriesDescription: studyData.description || '',
+          BodyPartExamined: '',
+          SeriesDate: seriesDate,
+          SeriesTime: seriesTime,
 
           // General Equipment Module
           Manufacturer: 'OHIF',
           ManufacturerModelName: 'Image Converter',
+          StationName: '',
+          SoftwareVersions: IMPLEMENTATION_VERSION_NAME,
 
           // SC Equipment Module (Secondary Capture)
           ConversionType: 'WSD', // Workstation
 
           // General Image Module
           InstanceNumber: `${index + 1}`,
+          AcquisitionNumber: `${index + 1}`,
+          AcquisitionDate: acquisitionDate,
+          AcquisitionTime: acquisitionTime,
+          ContentDate: contentDate,
+          ContentTime: contentTime,
+          ImageType: 'DERIVED\\SECONDARY',
           PatientOrientation: '',
+          ImagePositionPatient: [0, 0, 0],
+          ImageOrientationPatient: [1, 0, 0, 0, 1, 0],
+          PixelSpacing: [1, 1],
+          FrameOfReferenceUID: frameOfReferenceUID,
 
           // Image Pixel Module
           SamplesPerPixel: 3,
@@ -167,6 +192,8 @@ function DicomUpload({ dataSource, onComplete, onStarted, servicesManager }: Dic
           BitsStored: 8,
           HighBit: 7,
           PixelRepresentation: 0,
+          RescaleSlope: 1,
+          RescaleIntercept: 0,
           PlanarConfiguration: 0,
 
           // SOP Common Module

@@ -23,6 +23,11 @@ export const IMPLEMENTATION_CLASS_UID = `${CUSTOM_UID_ROOT}.2`;
 export const IMPLEMENTATION_VERSION_NAME = 'OHIF-3.9.0';
 
 /**
+ * Source Application Entity Title - Identifies the AE Title of the source application
+ */
+export const SOURCE_APPLICATION_ENTITY_TITLE = 'OHIF';
+
+/**
  * DICOM SOP Class UIDs - Identifies the type of DICOM object
  * Reference: DICOM Standard Part 4, Annex B
  */
@@ -120,6 +125,7 @@ export const createDicomMetaInfo = (
   return {
     FileMetaInformationVersion: new Uint8Array([0, 1]).buffer,
     TransferSyntaxUID: { Value: [transferSyntaxUID] },
+    SourceApplicationEntityTitle: { Value: [SOURCE_APPLICATION_ENTITY_TITLE] },
     ImplementationClassUID: { Value: [IMPLEMENTATION_CLASS_UID] },
     ImplementationVersionName: { Value: [IMPLEMENTATION_VERSION_NAME] },
     MediaStorageSOPClassUID: { Value: [sopClassUID] },

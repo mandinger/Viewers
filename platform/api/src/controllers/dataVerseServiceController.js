@@ -37,7 +37,7 @@ const manageScreenShot = async (req, res) => {
 
 const manageUploads = async (req, res) => {
   const { metadataImg, accountid, kmo_UUID } = req.body;
-  const dataverseApiUrl = process.env.RESOURCE_DATAVERSE;
+  const dataverseApiUrl = process.env.RESOURCE_DATAVERSE + "/api/data/v9.2";
 
   if (!dataverseApiUrl) {
     return res.status(500).json({ message: 'Missing RESOURCE_DATAVERSE configuration.' });
@@ -73,22 +73,48 @@ const manageUploads = async (req, res) => {
       },
     });
 
-    const escapedKmoUuid = String(kmo_UUID).replace(/'/g, "''");
-    const seriesKey = `(kmo_UUID='${escapedKmoUuid}')`;
-
-    const upsertPayload = {
-      kmo_UUID,
-      accountid,
-      ...mappedMetadata,
+    const createPayload = {
+      kmo_uuid: kmo_UUID,
+      kmo_message: JSON.stringify(mappedMetadata || {})
     };
 
-    await dataverseClient.patch(`/series${seriesKey}`, upsertPayload);
+    let response;
+    try {
+      const entitySetName = 'kmo_series(8af5b15b-9210-f011-9989-6045bd08963e)';
+      response = await dataverseClient.patch(`/${entitySetName}`, createPayload);
+    } catch (requestError) {
+      const status = requestError.response?.status || 502;
+      const responseData = requestError.response?.data;
+      const message = responseData?.error?.message || requestError.message || 'Dataverse request failed.';
 
+      console.error('Dataverse request failed:', {
+        status,
+        message,
+        data: responseData,
+      });
+
+      return res.status(status).json({
+        message: 'Failed to save metadata to Dataverse.',
+        error: message,
+        dataverseStatus: status,
+        dataverseResponse: responseData,
+      });
+    }
+
+    const data = response.data;
+    const status = response.status;
+
+    console.log('Dataverse response status:', status);
+    console.log('Dataverse response data:', data);
     console.log('accountid:' + accountid);
     console.log(keyValueDictionary['x00100010'], metadataImg?.x00100010);
     console.log(keyValueDictionary['x0020000d'], metadataImg?.x0020000d);
 
-    res.status(201).json({ message: 'Metadata upserted to series.' });
+    res.status(status || 201).json({
+      message: 'Metadata inserted to series.',
+      dataverseStatus: status,
+      dataverseResponse: data,
+    });
   } catch (error) {
     console.error('Error saving metadata:', error);
     res.status(500).json({ message: 'Failed to save metadata.', error: error.message });
