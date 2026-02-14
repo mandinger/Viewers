@@ -205,6 +205,7 @@ export default class DicomFileUploader extends PubSubService {
             body: JSON.stringify({
               metadataImg: data,
               accountid: accountid,
+              kmo_UUID: parsedSeriesUID
             }),
           })
             .then(response => {
