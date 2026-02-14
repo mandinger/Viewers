@@ -55,6 +55,7 @@ const manageUploads = async (req, res) => {
     }, {});
 
   const mappedMetadata = mapMetadataToDictionary(metadataImg);
+  const escapeODataString = value => String(value).replace(/'/g, "''");
   try {
     const token = await tokenService.getToken();
     if (!token) {
@@ -80,8 +81,13 @@ const manageUploads = async (req, res) => {
 
     let response;
     try {
-      const entitySetName = 'kmo_series(8af5b15b-9210-f011-9989-6045bd08963e)';
-      response = await dataverseClient.patch(`/${entitySetName}`, createPayload);
+      const entitySetName = 'kmo_series';
+      //generate guide here
+      const escapedKmoUuid = escapeODataString(kmo_UUID);
+      response = await dataverseClient.patch(
+        `/${entitySetName}(kmo_uuid='${escapedKmoUuid}')`,
+        createPayload
+      );
     } catch (requestError) {
       const status = requestError.response?.status || 502;
       const responseData = requestError.response?.data;
