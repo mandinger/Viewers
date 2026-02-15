@@ -82,7 +82,6 @@ const manageUploads = async (req, res) => {
     let response;
     try {
       const entitySetName = 'kmo_series';
-      //generate guide here
       const escapedKmoUuid = escapeODataString(kmo_UUID);
       response = await dataverseClient.patch(
         `/${entitySetName}(kmo_uuid='${escapedKmoUuid}')`,
