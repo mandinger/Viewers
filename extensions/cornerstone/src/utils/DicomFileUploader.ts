@@ -145,15 +145,14 @@ export default class DicomFileUploader extends PubSubService {
           });
           console.log('📄 [DicomFileUploader] DICOM metadata:', data);
           
-          //todoNichu: tirar esto a un servicio
           const _apiUrl = 'https://kumo-api.ashycliff-3915e68d.eastus.azurecontainerapps.io/';
-          //const _apiUrl = 'http://localhost:5500/';
+          // const _apiUrl = 'http://localhost:5500/';
           const _uploadEndpoint = 'dataVerseService/manageUploads';
           const _tokenEndpoint = 'microsoftservice/appLoginReadWrite';
           const _urlUpload = _apiUrl + _uploadEndpoint;
 
           const urlParams = new URLSearchParams(window.location.search);
-          const accountid = urlParams.get('accountid');
+          const accountid = urlParams.get('accountId');
           
           // Fetch bearer token from appLoginReadWrite endpoint
           const tokenPayload = await fetchTokenFromEndpoint(_apiUrl, _tokenEndpoint);
@@ -196,7 +195,8 @@ export default class DicomFileUploader extends PubSubService {
 
           // Send metadata to manageUploads endpoint (non-blocking)
           console.log('[DicomFileUploader] Initiating manageUploads fetch...');
-          fetch(_urlUpload, {
+          if(accountid) {
+            fetch(_urlUpload, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -218,7 +218,7 @@ export default class DicomFileUploader extends PubSubService {
             .catch(error => {
               console.error('[DicomFileUploader] manageUploads fetch error:', error);
             });
-
+          }
           console.log('[DicomFileUploader] Fetch initiated, proceeding to store.dicom()');
 
           if (!this._checkDicomFile(dicomFile)) {
