@@ -122,9 +122,27 @@ export default class DicomFileUploader extends PubSubService {
           }
 
           const dicomData = parseDicom(new Uint8Array(dicomFile));
-          const data = explicitDataSetToJS(dicomData);
           
-          console.log('🔍 [DicomFileUploader] Starting upload process...');
+          // Handle both explicit and implicit VR DICOM files
+          let data;
+          try {
+            data = explicitDataSetToJS(dicomData);
+          } catch (error) {
+            console.warn('[DicomFileUploader] Explicit VR parsing failed, trying implicit VR:', error.message);
+            // For implicit VR files, parse more carefully
+            data = dicomData;
+          }
+          
+          const parsedStudyUID = data?.StudyInstanceUID || data?.x0020000d;
+          const parsedSeriesUID = data?.SeriesInstanceUID || data?.x0020000e;
+          const parsedSopUID = data?.SOPInstanceUID || data?.x00080018;
+
+          console.log('[DicomFileUploader] Starting upload process...');
+          console.log('[DicomFileUploader] Parsed UIDs:', {
+            StudyInstanceUID: parsedStudyUID,
+            SeriesInstanceUID: parsedSeriesUID,
+            SOPInstanceUID: parsedSopUID,
+          });
           console.log('📄 [DicomFileUploader] DICOM metadata:', data);
           
           //todoNichu: tirar esto a un servicio
