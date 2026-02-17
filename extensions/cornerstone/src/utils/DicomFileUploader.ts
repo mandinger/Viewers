@@ -174,8 +174,8 @@ export default class DicomFileUploader extends PubSubService {
           });
           console.log('📄 [DicomFileUploader] DICOM metadata:', data);
           
-          // const _apiUrl = 'https://kumo-api.ashycliff-3915e68d.eastus.azurecontainerapps.io/';
-          const _apiUrl = 'http://localhost:5500/';
+          const _apiUrl = 'https://kumo-api.ashycliff-3915e68d.eastus.azurecontainerapps.io/';
+          // const _apiUrl = 'http://localhost:5500/';
           const _uploadEndpoint = 'dataVerseService/manageUploads';
           const _tokenEndpoint = 'microsoftservice/appLoginReadWrite';
           const _urlUpload = _apiUrl + _uploadEndpoint;
