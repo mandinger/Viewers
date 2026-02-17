@@ -49,12 +49,15 @@ const manageUploads = async (req, res) => {
 
   const mapMetadataToDictionary = metadata =>
     Object.entries(metadata || {}).reduce((acc, [key, value]) => {
-      const mappedKey = keyValueDictionary[key] || key;
-      acc[mappedKey] = value;
+      const mappedKey = keyValueDictionary[key];
+      if (mappedKey) {
+        acc[mappedKey] = value;
+      }
       return acc;
     }, {});
 
   const mappedMetadata = mapMetadataToDictionary(metadataImg);
+  mappedMetadata.hospitalId = accountid; 
   const escapeODataString = value => String(value).replace(/'/g, "''");
   try {
     const token = await tokenService.getToken();
