@@ -36,6 +36,23 @@ export class UploadRejection {
   }
 }
 
+const isAnonymizedDicom = (data: any): boolean => {
+  if (data?.string && typeof data.string === 'function') {
+    const patientNameValue = data.string('x00100010');
+    return !patientNameValue || patientNameValue.trim().length === 0 || patientNameValue === 'Anonymized^^';
+  }
+
+  const patientName = data?.PatientName ?? data?.x00100010;
+
+  if (!patientName) {
+    return true;
+  }
+
+  if (typeof patientName === 'string') {
+    return patientName.trim().length === 0;
+  }
+};
+
 export default class DicomFileUploader extends PubSubService {
   private _file;
   private _fileId;
@@ -137,6 +154,18 @@ export default class DicomFileUploader extends PubSubService {
           const parsedSeriesUID = data?.SeriesInstanceUID || data?.x0020000e;
           const parsedSopUID = data?.SOPInstanceUID || data?.x00080018;
 
+          if (isAnonymizedDicom(data)) {
+            console.log('[DicomFileUploader] Anonymized DICOM detected. Upload rejected.');
+            this._reject(
+              reject,
+              new UploadRejection(
+                UploadStatus.Failed,
+                'Anonymized DICOM files are not supported.'
+              )
+            );
+            return;
+          }
+
           console.log('[DicomFileUploader] Starting upload process...');
           console.log('[DicomFileUploader] Parsed UIDs:', {
             StudyInstanceUID: parsedStudyUID,
@@ -145,15 +174,14 @@ export default class DicomFileUploader extends PubSubService {
           });
           console.log('📄 [DicomFileUploader] DICOM metadata:', data);
           
-          //todoNichu: tirar esto a un servicio
           const _apiUrl = 'https://kumo-api.ashycliff-3915e68d.eastus.azurecontainerapps.io/';
-          //const _apiUrl = 'http://localhost:5500/';
+          // const _apiUrl = 'http://localhost:5500/';
           const _uploadEndpoint = 'dataVerseService/manageUploads';
           const _tokenEndpoint = 'microsoftservice/appLoginReadWrite';
           const _urlUpload = _apiUrl + _uploadEndpoint;
 
           const urlParams = new URLSearchParams(window.location.search);
-          const accountid = urlParams.get('accountid');
+          const accountid = urlParams.get('accountId');
           
           // Fetch bearer token from appLoginReadWrite endpoint
           const tokenPayload = await fetchTokenFromEndpoint(_apiUrl, _tokenEndpoint);
@@ -194,31 +222,59 @@ export default class DicomFileUploader extends PubSubService {
             return;
           }
 
-          // Send metadata to manageUploads endpoint (non-blocking)
+          // Send metadata to manageUploads endpoint before DICOM upload
           console.log('[DicomFileUploader] Initiating manageUploads fetch...');
-          fetch(_urlUpload, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              ...(bearerToken && { 'Authorization': `Bearer ${bearerToken}` }),
-            },
-            body: JSON.stringify({
-              metadataImg: data,
-              accountid: accountid,
-            }),
-          })
-            .then(response => {
-              console.log('[DicomFileUploader] manageUploads response:', response.status, response.statusText);
-              return response.json();
-            })
-            .then(result => {
-              console.log('[DicomFileUploader] manageUploads result:', result);
-            })
-            .catch(error => {
-              console.error('[DicomFileUploader] manageUploads fetch error:', error);
-            });
+          if (accountid) {
+            try {
+              const response = await fetch(_urlUpload, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  ...(bearerToken && { Authorization: `Bearer ${bearerToken}` }),
+                },
+                body: JSON.stringify({
+                  metadataImg: data,
+                  accountid: accountid,
+                  kmo_UUID: parsedSeriesUID,
+                }),
+              });
 
-          console.log('[DicomFileUploader] Fetch initiated, proceeding to store.dicom()');
+              console.log(
+                '[DicomFileUploader] manageUploads response:',
+                response.status,
+                response.statusText
+              );
+
+              if (!response.ok) {
+                this._reject(
+                  reject,
+                  new UploadRejection(
+                    UploadStatus.Failed,
+                    `manageUploads failed: ${response.status} ${response.statusText}`
+                  )
+                );
+                return;
+              }
+
+              const result = await response.json();
+              console.log('[DicomFileUploader] manageUploads result:', result);
+            } catch (error) {
+              console.error('[DicomFileUploader] manageUploads fetch error:', error);
+              this._reject(
+                reject,
+                new UploadRejection(UploadStatus.Failed, 'manageUploads failed')
+              );
+              return;
+            }
+          } else {
+            console.warn('[DicomFileUploader] Missing accountId. Upload rejected.');
+            this._reject(
+              reject,
+              new UploadRejection(UploadStatus.Failed, 'Missing accountId')
+            );
+            return;
+          }
+          console.log('[DicomFileUploader] manageUploads succeeded, proceeding to store.dicom()');
 
           if (!this._checkDicomFile(dicomFile)) {
             // The file is not DICOM
