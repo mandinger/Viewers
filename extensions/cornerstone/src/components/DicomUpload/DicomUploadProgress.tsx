@@ -57,7 +57,7 @@ function DicomUploadProgress({
 
   const [showFailedOnly, setShowFailedOnly] = useState(false);
 
-  const progressBarContainerRef = useRef<HTMLElement>();
+  const progressBarContainerRef = useRef<HTMLDivElement>(null);
 
   /**
    * The effect for measuring and setting the current upload rate. This is
@@ -267,7 +267,7 @@ function DicomUploadProgress({
 
   const getNumCompletedAndTimeRemainingComponent = (): ReactElement => {
     return (
-      <div className="bg-primary-dark flex h-14 items-center px-1 pb-4 text-lg">
+      <div className="bg-primary-dark text-primary-light flex h-14 items-center px-2 text-lg">
         {numFilesCompleted === dicomFileUploaderArr.length ? (
           <>
             <span className={NO_WRAP_ELLIPSIS_CLASS_NAMES}>{`${dicomFileUploaderArr.length} ${
@@ -283,20 +283,24 @@ function DicomUploadProgress({
           </>
         ) : (
           <>
-            <span
-              style={getNofMFilesStyle()}
-              className={classNames(NO_WRAP_ELLIPSIS_CLASS_NAMES, 'text-end')}
-            >
-              {`${numFilesCompleted} of ${dicomFileUploaderArr.length}`}&nbsp;
-            </span>
-            <span className={NO_WRAP_ELLIPSIS_CLASS_NAMES}>{' files completed.'}&nbsp;</span>
-            <span className={NO_WRAP_ELLIPSIS_CLASS_NAMES}>
-              {timeRemaining ? `Less than ${getFormattedTimeRemaining()} remaining. ` : ''}
-            </span>
+            <div className="min-w-0 flex items-center">
+              <span
+                style={getNofMFilesStyle()}
+                className={classNames(NO_WRAP_ELLIPSIS_CLASS_NAMES, 'shrink-0 text-end')}
+              >
+                {`${numFilesCompleted} of ${dicomFileUploaderArr.length}`}&nbsp;
+              </span>
+              <span className={classNames(NO_WRAP_ELLIPSIS_CLASS_NAMES, 'shrink-0')}>
+                {' files completed.'}&nbsp;
+              </span>
+              <span className={classNames(NO_WRAP_ELLIPSIS_CLASS_NAMES, 'min-w-0')}>
+                {timeRemaining ? `Less than ${getFormattedTimeRemaining()} remaining. ` : ''}
+              </span>
+            </div>
             <span
               className={classNames(
                 NO_WRAP_ELLIPSIS_CLASS_NAMES,
-                'text-primary-active hover:text-primary-light active:text-aqua-pale ml-auto cursor-pointer'
+                'text-primary-active hover:text-primary-light active:text-aqua-pale ml-auto shrink-0 cursor-pointer'
               )}
               onClick={cancelAllUploads}
             >
@@ -360,9 +364,9 @@ function DicomUploadProgress({
   return (
     <div className="flex grow flex-col">
       {getNumCompletedAndTimeRemainingComponent()}
-      <div className="flex grow flex-col overflow-hidden bg-black text-lg">
+      <div className="flex min-h-0 grow flex-col overflow-hidden bg-black text-lg">
         {getPercentCompleteComponent()}
-        <div className="ohif-scrollbar h-1 grow overflow-y-scroll px-2">
+        <div className="ohif-scrollbar min-h-0 flex-1 overflow-y-scroll px-2">
           {dicomFileUploaderArr
             .filter(
               dicomFileUploader =>

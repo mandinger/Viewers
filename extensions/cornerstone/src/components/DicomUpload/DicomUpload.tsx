@@ -215,10 +215,14 @@ function DicomUpload({ dataSource, onComplete, onStarted, servicesManager }: Dic
 
         console.log('✅ DICOM dataset created with Modality:', dataset.Modality, 'Dimensions:', img.width, 'x', img.height);
 
-        // Create a DicomFileUploader with the converted DICOM blob
+        // Create a DicomFileUploader with a named DICOM file
+        const sourceName = imageFile.name || `image-${index + 1}`;
+        const baseName = sourceName.replace(/\.[^/.]+$/, '');
+        const dicomFileName = `${baseName}.dcm`;
         const downloadBlob = new Blob([part10Buffer], { type: 'application/dicom' });
+        const dicomFile = new File([downloadBlob], dicomFileName, { type: 'application/dicom' });
         uploadersFromDicom.push(
-          new DicomFileUploader(downloadBlob, dataSource, userAuthenticationService)
+          new DicomFileUploader(dicomFile, dataSource, userAuthenticationService)
         );
       }
 

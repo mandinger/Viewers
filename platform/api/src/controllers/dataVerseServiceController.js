@@ -1,5 +1,4 @@
 const tokenService = require('../services/tokenService');
-const keyValueDictionary = require('../utils/keyValueDictionary');
 const axios = require('axios');
 
 require('dotenv').config();
@@ -36,7 +35,7 @@ const manageScreenShot = async (req, res) => {
 };
 
 const manageUploads = async (req, res) => {
-  const { metadataImg, accountid, kmo_UUID } = req.body;
+  const { metadataImg, kmo_UUID } = req.body;
   const dataverseApiUrl = process.env.RESOURCE_DATAVERSE + "/api/data/v9.2";
 
   if (!dataverseApiUrl) {
@@ -47,17 +46,6 @@ const manageUploads = async (req, res) => {
     return res.status(400).json({ message: 'kmo_UUID is required.' });
   }
 
-  const mapMetadataToDictionary = metadata =>
-    Object.entries(metadata || {}).reduce((acc, [key, value]) => {
-      const mappedKey = keyValueDictionary[key];
-      if (mappedKey) {
-        acc[mappedKey] = value;
-      }
-      return acc;
-    }, {});
-
-  const mappedMetadata = mapMetadataToDictionary(metadataImg);
-  mappedMetadata.hospitalId = accountid; 
   const escapeODataString = value => String(value).replace(/'/g, "''");
   try {
     const token = await tokenService.getToken();
@@ -79,7 +67,8 @@ const manageUploads = async (req, res) => {
 
     const createPayload = {
       kmo_uuid: kmo_UUID,
-      kmo_message: JSON.stringify(mappedMetadata || {})
+      kmo_uploadstatus: 794210003, //read status value,
+      kmo_message: JSON.stringify(metadataImg || {})
     };
 
     let response;
@@ -114,9 +103,6 @@ const manageUploads = async (req, res) => {
 
     console.log('Dataverse response status:', status);
     console.log('Dataverse response data:', data);
-    console.log('accountid:' + accountid);
-    console.log(keyValueDictionary['x00100010'], metadataImg?.x00100010);
-    console.log(keyValueDictionary['x0020000d'], metadataImg?.x0020000d);
 
     res.status(status || 201).json({
       message: 'Metadata inserted to series.',
