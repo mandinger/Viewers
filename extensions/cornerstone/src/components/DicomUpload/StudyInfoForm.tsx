@@ -98,7 +98,7 @@ export const StudyInfoForm = ({ onSubmit, onCancel, fileCount = 1 }: StudyInfoFo
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-gray-900 rounded-lg p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         <h2 className="text-xl font-bold text-white mb-6">New Study ({fileCount} file{fileCount > 1 ? 's' : ''})</h2>
-        
+
         <p className="text-blue-400 text-sm mb-6">
           ℹ️ You can still add more non-DICOM images to this study at this time.
         </p>
@@ -212,11 +212,10 @@ export const StudyInfoForm = ({ onSubmit, onCancel, fileCount = 1 }: StudyInfoFo
                 className="w-full px-3 py-2 bg-gray-700 text-white rounded border border-gray-600"
               >
                 <option value="">Select Gender</option>
-                <option value="M">Male</option>
-                <option value="MC">Male Castrated</option>
-                <option value="F">Female</option>
-                <option value="FS">Female Spayed</option>
-                <option value="O">Other</option>
+                <option value="794210000">Male</option>
+                <option value="794210001">Male Castrated</option>
+                <option value="794210002">Female</option>
+                <option value="794210003">Female Spayed</option>
               </select>
             </div>
             <div>
