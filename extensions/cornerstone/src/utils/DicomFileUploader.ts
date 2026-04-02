@@ -3,6 +3,7 @@ import dicomImageLoader from '@cornerstonejs/dicom-image-loader';
 import { PubSubService } from '@ohif/core';
 import { parseDicom, explicitDataSetToJS } from 'dicom-parser';
 import { fetchTokenFromEndpoint } from '../../../../platform/app/src/utils/tokenUtils';
+import { mapDicomToPayload } from './dicomFieldMapping';
 
 export const EVENTS = {
   PROGRESS: 'event:DicomFileUploader:progress',
@@ -15,6 +16,13 @@ export interface DicomFileUploaderEvent {
 export interface DicomFileUploaderProgressEvent extends DicomFileUploaderEvent {
   percentComplete: number;
 }
+
+type UploadCallbackMap = {
+  progress: (evt: ProgressEvent<XMLHttpRequestEventTarget>) => void;
+  timeout: () => void;
+  abort: () => void;
+  error: () => void;
+};
 
 export enum UploadStatus {
   NotStarted,
@@ -53,6 +61,32 @@ const isAnonymizedDicom = (data: any): boolean => {
   }
 };
 
+// Clean DICOM metadata by replacing raw parser elements ({dataOffset, length}) with empty strings
+const sanitizeDicomMetadata = (value: any): any => {
+  if (value == null) return '';
+  
+  // Check if this is a raw DICOM element object
+  if (typeof value === 'object' && 'dataOffset' in value && 'length' in value) {
+    return '';
+  }
+  
+  // Recursively clean arrays
+  if (Array.isArray(value)) {
+    return value.map(sanitizeDicomMetadata);
+  }
+  
+  // Recursively clean objects
+  if (typeof value === 'object') {
+    const cleaned: any = {};
+    for (const [key, val] of Object.entries(value)) {
+      cleaned[key] = sanitizeDicomMetadata(val);
+    }
+    return cleaned;
+  }
+  
+  return value;
+};
+
 export default class DicomFileUploader extends PubSubService {
   private _file;
   private _fileId;
@@ -76,7 +110,7 @@ export default class DicomFileUploader extends PubSubService {
   }
 
   getFileName(): string {
-    return this._file.name;
+    return this._file?.name || `upload-${this._fileId}.dcm`;
   }
 
   getFileSize(): number {
@@ -103,7 +137,7 @@ export default class DicomFileUploader extends PubSubService {
 
     this._loadPromise = new Promise<void>((resolve, reject) => {
       // The upload listeners: fire progress events and/or settle the promise.
-      const uploadCallbacks = {
+      const uploadCallbacks: UploadCallbackMap = {
         progress: evt => {
           if (!evt.lengthComputable) {
             // Progress computation is not possible.
@@ -150,11 +184,15 @@ export default class DicomFileUploader extends PubSubService {
             data = dicomData;
           }
           
-          const parsedStudyUID = data?.StudyInstanceUID || data?.x0020000d;
-          const parsedSeriesUID = data?.SeriesInstanceUID || data?.x0020000e;
-          const parsedSopUID = data?.SOPInstanceUID || data?.x00080018;
+          // Clean metadata to remove raw parser elements
+          const sanitizedMetadata = sanitizeDicomMetadata(data);
+          
+          // Extract UIDs as strings from sanitized data
+          const parsedStudyUID = String(sanitizedMetadata?.StudyInstanceUID || sanitizedMetadata?.x0020000d || '');
+          const parsedSeriesUID = String(sanitizedMetadata?.SeriesInstanceUID || sanitizedMetadata?.x0020000e || '');
+          const parsedSopUID = String(sanitizedMetadata?.SOPInstanceUID || sanitizedMetadata?.x00080018 || '');
 
-          if (isAnonymizedDicom(data)) {
+          if (isAnonymizedDicom(sanitizedMetadata)) {
             console.log('[DicomFileUploader] Anonymized DICOM detected. Upload rejected.');
             this._reject(
               reject,
@@ -172,7 +210,7 @@ export default class DicomFileUploader extends PubSubService {
             SeriesInstanceUID: parsedSeriesUID,
             SOPInstanceUID: parsedSopUID,
           });
-          console.log('📄 [DicomFileUploader] DICOM metadata:', data);
+          console.log('📄 [DicomFileUploader] DICOM metadata (sanitized):', sanitizedMetadata);
           
           const _apiUrl = 'https://kumo-api.ashycliff-3915e68d.eastus.azurecontainerapps.io/';
           // const _apiUrl = 'http://localhost:5500/';
@@ -226,6 +264,10 @@ export default class DicomFileUploader extends PubSubService {
           console.log('[DicomFileUploader] Initiating manageUploads fetch...');
           if (accountid) {
             try {
+              // Map sanitized metadata to clean payload with only required fields
+              const mappedPayload = mapDicomToPayload(sanitizedMetadata, accountid);
+              console.log('[DicomFileUploader] Mapped payload:', mappedPayload);
+              
               const response = await fetch(_urlUpload, {
                 method: 'POST',
                 headers: {
@@ -233,9 +275,8 @@ export default class DicomFileUploader extends PubSubService {
                   ...(bearerToken && { Authorization: `Bearer ${bearerToken}` }),
                 },
                 body: JSON.stringify({
-                  metadataImg: data,
-                  accountid: accountid,
-                  kmo_UUID: parsedSeriesUID,
+                  metadataImg: mappedPayload,
+                  kmo_UUID: parsedSeriesUID
                 }),
               });
 
@@ -329,19 +370,25 @@ export default class DicomFileUploader extends PubSubService {
     reject(new UploadRejection(UploadStatus.Failed, reason));
   }
 
-  private _addRequestCallbacks(request: XMLHttpRequest, uploadCallbacks) {
+  private _addRequestCallbacks(request: XMLHttpRequest, uploadCallbacks: UploadCallbackMap) {
     const abortCallback = () => request.abort();
     this._abortController.signal.addEventListener('abort', abortCallback);
 
-    for (const [eventName, callback] of Object.entries(uploadCallbacks)) {
-      request.upload.addEventListener(eventName, callback);
+    for (const [eventName, callback] of Object.entries(uploadCallbacks) as [
+      keyof UploadCallbackMap,
+      UploadCallbackMap[keyof UploadCallbackMap]
+    ][]) {
+      request.upload.addEventListener(eventName, callback as EventListener);
     }
 
     const cleanUpCallback = () => {
       this._abortController.signal.removeEventListener('abort', abortCallback);
 
-      for (const [eventName, callback] of Object.entries(uploadCallbacks)) {
-        request.upload.removeEventListener(eventName, callback);
+      for (const [eventName, callback] of Object.entries(uploadCallbacks) as [
+        keyof UploadCallbackMap,
+        UploadCallbackMap[keyof UploadCallbackMap]
+      ][]) {
+        request.upload.removeEventListener(eventName, callback as EventListener);
       }
 
       request.removeEventListener('loadend', cleanUpCallback);
@@ -350,7 +397,7 @@ export default class DicomFileUploader extends PubSubService {
   }
 
   private _checkDicomFile(arrayBuffer: ArrayBuffer) {
-    if (arrayBuffer.length <= 132) {
+    if (arrayBuffer.byteLength <= 132) {
       return false;
     }
     const arr = new Uint8Array(arrayBuffer.slice(128, 132));
